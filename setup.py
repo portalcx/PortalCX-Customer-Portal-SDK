@@ -5,22 +5,21 @@
 Name: Setup.py
 
 Description:
-This script is used to package the shared code as a pip package.
+This script is used to package the PortalCX Python SDK as a pip package.
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='portalcx_shared_code',
+    name='portalcx_sdk',
     version='1.0.0',
-    description='Shared code for Function Apps',
+    description='Python SDK for PortalCX',
     author='Matthew Schwen',
-    author_email='matt@portalcx.io',
+    author_email='matt@portalcx.com',
     url='https://github.com/portalcx/PortalCX-Customer-Portal-SDK',
-    packages=['utils', 'api'],
+    packages=find_packages(),
     install_requires=[
         'requests',
         'httpx',
-        'python-dotenv'
     ],
 )

@@ -2,17 +2,29 @@
 # -*- coding: utf-8 -*-
 
 """
-Name: CreateCustomerPortal/__init__.py
+name:
+api/portalcx.py
 
-Description:
-
-Azure Function for creating a customer portal in PortalCX.
+description:
+Class representing the PortalCX API.
 """
 
-import logging
-import httpx
 from typing import Dict
-from shared_code.api.api_base import APIBase
+from api.api_base import APIBase, APIBaseError
+from models.customer_portal import CustomerPortal
+from utils.logger import get_logger
+
+
+class PortalCXError(APIBaseError):
+    pass  # Inheriting from APIBaseError
+
+
+class PortalCXError(Exception):
+    def __init__(self, status_code, error_message):
+        self.status_code = status_code
+        self.error_message = error_message
+        super().__init__(f"PortalCX API Error (Code: {status_code}): {error_message}")
+
 
 class PortalCX(APIBase):
     """
@@ -21,53 +33,17 @@ class PortalCX(APIBase):
 
     def __init__(self, api_base_url: str):
         super().__init__(api_base_url)
-    
-    def login(self, email: str, password: str) -> Dict:
+        self.logger = get_logger()
+
+    def login(self, email: str, password: str) -> str:
         """
         Logs into the PortalCX API with the provided credentials.
-
-        Parameters:
-        email (str): Email address for the user account.
-        password (str): Password for the user account.
-
-        Returns:
-        response_data (dict): Response data from the API, including the auth token.
         """
-        login_url = self.base_url + "AuthManagement/Login"
-        headers = {"Content-Type": "application/json"}
+        login_url = "AuthManagement/Login"
         body = {"email": email, "password": password}
+        self.logger.info(f"Logging into PortalCX API with email: {email}")
+        response_data = self.request("POST", login_url, json=body)
+        self.auth_token = response_data.get("token")
+        self.logger.info("Successfully logged into PortalCX API")
 
-        with httpx.Client() as client:
-            response = client.post(login_url, json=body, headers=headers)
-
-        response_data = response.json()
-
-        if response.status_code != 200:
-            logging.error(f"PortalCX login failed: {response_data.get('errorMessage', 'Unknown error')}")
-            raise Exception(f"PortalCX login failed: {response_data.get('errorMessage', 'Unknown error')}")
-
-        return response_data
-    
-    def create_customer_portal(self, data: Dict) -> Dict:
-        """
-        Creates a new customer portal in PortalCX with the provided data.
-
-        Parameters:
-        data (dict): Data for creating the customer portal.
-
-        Returns:
-        response_data (dict): Response data from the API, including the portal ID.
-        """
-        create_portal_url = self.base_url + "Customer/portal/create"
-        headers = {"Authorization": f"Bearer {self.auth_token}", "Content-Type": "application/json"}
-
-        with httpx.Client() as client:
-            response = client.post(create_portal_url, json=data, headers=headers)
-
-        response_data = response.json()
-
-        if response.status_code != 200:
-            logging.error(f"PortalCX customer portal creation failed: {response_data.get('errorMessage', 'Unknown error')}")
-            raise Exception(f"PortalCX customer portal creation failed: {response_data.get('errorMessage', 'Unknown error')}")
-
-        return response_data
+        return self.auth_token
