@@ -10,7 +10,7 @@ Base class for API integration in the Azure Python Function App.
 """
 
 import httpx
-from abc import ABC, abstractmethod
+from abc import ABC
 from utils.logger import get_logger
 
 
@@ -73,7 +73,7 @@ class APIBase(ABC):
         :return: The JSON response from the API
         :raise: APIBaseError if the request fails
         """
-        url = f"{self.base_url}/{endpoint}"
+        url = f"{self.base_url}{endpoint}"
         headers = kwargs.pop('headers', {})
 
         # Add the authentication token to headers if it exists
@@ -91,6 +91,10 @@ class APIBase(ABC):
             # Check if response object is available and raise APIBaseError with status code and error message
             if hasattr(status_error, 'response') and status_error.response is not None:
                 error_message = status_error.response.json().get('errorMessage', 'Unknown error')
+                # Log the entire response content for better debugging
+                self.logger.error(f"Error response from the API: {status_error.response.content}")
+                # Use the logger to log the error message before raising the error
+                self.logger.error(f"Error message from the API: {error_message}")
                 raise APIBaseError(status_error.response.status_code, error_message)
 
             else:
@@ -104,10 +108,6 @@ class APIBase(ABC):
             self.logger.error(f"API request failed: {e}")
             raise
 
-        # Process the JSON response
-        try:
-            return response.json()
+        # Process the JSON response using process_response method
+        return self.process_response(response)
 
-        except ValueError:
-            self.logger.error("API response could not be parsed as JSON")
-            raise
