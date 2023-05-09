@@ -11,8 +11,11 @@ Unit tests for the PortalCX API class.
 
 import os
 import unittest
-from api.portalcx import PortalCX
-from models.customer_portal_create_request import CustomerPortalCreateRequest
+import pytest
+
+from portalcx.api.portalcx import PortalCX
+from portalcx.models.customer_portal_create_request import CustomerPortalCreateRequest
+from portalcx.models.user_registration import UserRegistration
 
 
 class TestPortalCX(unittest.TestCase):
@@ -25,6 +28,30 @@ class TestPortalCX(unittest.TestCase):
         cls.api_base_url = os.environ.get("PORTALCX_API_BASE_URL")
         cls.email = os.environ.get("PORTALCX_EMAIL")
         cls.password = os.environ.get("PORTALCX_PASSWORD")
+
+    @pytest.mark.skip(reason="Already Registered")
+    def test_register(self):
+        """
+        Test the register function of the PortalCX API class.
+        """
+        portal_cx = PortalCX(api_base_url=self.api_base_url)
+
+        # Prepare sample registration data
+        user_data = UserRegistration(
+            email="dude@portalcx.com",
+            password="somepassword",
+            firstName="Dude",
+            lastName="Test",
+            phone="1234567899",
+            companyName="PortalCX Test",
+            contactPhone="1234567899"
+        )
+
+        response_data = portal_cx.register(user_data=user_data)
+
+        self.assertIsNotNone(response_data)
+        self.assertIsInstance(response_data, dict)
+        self.assertTrue(response_data.get('result'))
 
     def test_login(self):
         """
@@ -45,7 +72,7 @@ class TestPortalCX(unittest.TestCase):
 
         # Prepare sample data
         portal_data = CustomerPortalCreateRequest(
-            customerEmail="test@email.com",
+            customerEmail="dude@portalcx.com",
             customerName="John Doe",
             customerPhone="1234567899",
             projectName="Home",

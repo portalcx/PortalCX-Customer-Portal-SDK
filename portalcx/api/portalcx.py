@@ -10,9 +10,12 @@ Class representing the PortalCX API.
 """
 
 from typing import Dict
-from api.api_base import APIBase, APIBaseError
+
+from .api_base import APIBase, APIBaseError
+from ..models.customer_portal_create_request import CustomerPortalCreateRequest
+from ..models.user_registration import UserRegistration
+
 from utils.logger import get_logger
-from models.customer_portal_create_request import CustomerPortalCreateRequest
 
 
 class PortalCX(APIBase):
@@ -23,6 +26,21 @@ class PortalCX(APIBase):
     def __init__(self, api_base_url: str):
         super().__init__(api_base_url)
         self.logger = get_logger()
+    
+    def register(self, user_data: UserRegistration) -> dict:
+        """
+        Registers a new user with the provided information.
+
+        :param user_data: A UserRegistration object containing the user information
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        register_url = "/api/AuthManagement/Register"
+        self.logger.info(f"Registering a new user with email: {user_data.email}")
+        response_data = self.request("POST", register_url, json=user_data.to_dict())
+        self.logger.info("Successfully registered a new user")
+
+        return response_data
 
     def login(self, email: str, password: str) -> str:
         """
