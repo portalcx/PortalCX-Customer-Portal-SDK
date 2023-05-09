@@ -11,7 +11,7 @@ This script is used to package the PortalCX Python SDK as a pip package.
 from setuptools import setup, find_packages
 
 setup(
-    name='portalcx_sdk',
+    name='portalcx',
     version='1.0.0',
     description='Python SDK for PortalCX',
     author='Matthew Schwen',
@@ -19,7 +19,6 @@ setup(
     url='https://github.com/portalcx/PortalCX-Customer-Portal-SDK',
     packages=find_packages(),
     install_requires=[
-        'requests',
         'httpx',
     ],
 )
