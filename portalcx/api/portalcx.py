@@ -15,18 +15,6 @@ from utils.logger import get_logger
 from models.customer_portal_create_request import CustomerPortalCreateRequest
 
 
-
-class PortalCXError(APIBaseError):
-    pass  # Inheriting from APIBaseError
-
-
-class PortalCXError(Exception):
-    def __init__(self, status_code, error_message):
-        self.status_code = status_code
-        self.error_message = error_message
-        super().__init__(f"PortalCX API Error (Code: {status_code}): {error_message}")
-
-
 class PortalCX(APIBase):
     """
     Class representing the PortalCX API.
@@ -64,3 +52,4 @@ class PortalCX(APIBase):
         self.logger.info("Successfully created a new portal")
 
         return response_data
+
