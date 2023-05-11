@@ -25,12 +25,12 @@ class BaseTest:
         self.email = os.environ.get("PORTALCX_EMAIL")
         self.password = os.environ.get("PORTALCX_PASSWORD")
 
-        self.portal_cx = PortalCX(api_base_url=self.api_base_url)
-        request.cls.portal_cx = self.portal_cx
+        self.pxc = PortalCX(api_base_url=self.api_base_url)
+        request.cls.pxc = self.pxc
 
-        auth_token = self.portal_cx.login(email=self.email, password=self.password)
+        auth_token = self.pxc.login(email=self.email, password=self.password)
         assert auth_token is not None
         assert isinstance(auth_token, str)
 
-        self.portal_cx.token = auth_token
+        self.pxc.token = auth_token
         request.cls.token = auth_token

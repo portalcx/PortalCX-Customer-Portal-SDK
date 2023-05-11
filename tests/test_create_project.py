@@ -19,21 +19,21 @@ class TestCreateProject(BaseTest):
         Test the create_project function of the PortalCX API class.
         """
         project_data = CreateProjectRequest(
+            # ProjectId=None,
+            # CompanyId=None,
             Title="Solar Installation",
             ContactEmail="projectmanager@solarcompany.com",
             ContactPhone="1234567890",
             CompanyName="Solar Company",
-            Color="#FDB813",
-            PortalAppLogoUpload=None,
-            EmailLogoUpload=None,
+            # Color=None,
+            # PortalAppLogoUpload=None,
+            # EmailLogoUpload=None,
             IsCustomerReferrals=True,
-            IsLogoUpdate=False,
-            IsEmailLogoUpdate=False,
-            CountryId=1
+            # IsLogoUpdate=None,
+            # IsEmailLogoUpdate=None,
+            # CountryId=None
         )
-
-        response_data = self.portal_cx.create_project(project_data=project_data)
-
+        response_data = self.pxc.create_project(project_data=project_data)
         assert response_data is not None
         assert isinstance(response_data, dict)
         if "ProjectId" in response_data:

@@ -20,10 +20,10 @@ class CreateProjectRequest(BaseModel):
     ContactEmail: str
     ContactPhone: str
     CompanyName: str
-    Color: str
+    Color: Optional[str] = None
     PortalAppLogoUpload: Optional[str] = None
     EmailLogoUpload: Optional[str] = None
     IsCustomerReferrals: bool
-    IsLogoUpdate: bool
-    IsEmailLogoUpdate: bool
-    CountryId: int
+    IsLogoUpdate: Optional[bool] = None
+    IsEmailLogoUpdate: Optional[bool] = None
+    CountryId: Optional[int] = None

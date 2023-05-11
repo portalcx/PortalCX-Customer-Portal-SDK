@@ -20,7 +20,7 @@ class TestPortalCX(BaseTest):
         """
         Test the register function of the PortalCX API class.
         """
-        portal_cx = PortalCX(api_base_url=self.api_base_url)
+        pxc = PortalCX(api_base_url=self.api_base_url)
 
         # Prepare sample registration data
         user_data = UserRegistration(
@@ -33,7 +33,7 @@ class TestPortalCX(BaseTest):
             contactPhone="9876543211"
         )
 
-        response_data = portal_cx.register(user_data=user_data)
+        response_data = pxc.register(user_data=user_data)
 
         assert response_data is not None
         assert isinstance(response_data, dict)
