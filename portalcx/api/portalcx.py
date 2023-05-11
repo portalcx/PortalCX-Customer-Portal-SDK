@@ -2,20 +2,19 @@
 # -*- coding: utf-8 -*-
 
 """
-name:
 api/portalcx.py
-
-description:
+---------------
 Class representing the PortalCX API.
 """
 
+import json
 from typing import Dict
 
-from .api_base import APIBase, APIBaseError
-from ..models.customer_portal_create_request import CustomerPortalCreateRequest
-from ..models.user_registration import UserRegistration
-
 from utils.logger import get_logger
+
+from ..models.project_models import CreateProjectRequest
+from ..models.user_registration import UserRegistration
+from .api_base import APIBase
 
 
 class PortalCX(APIBase):
@@ -26,6 +25,15 @@ class PortalCX(APIBase):
     def __init__(self, api_base_url: str):
         super().__init__(api_base_url)
         self.logger = get_logger()
+        self._token = None
+
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        self._token = value
     
     def register(self, user_data: UserRegistration) -> dict:
         """
@@ -37,7 +45,7 @@ class PortalCX(APIBase):
         """
         register_url = "/api/AuthManagement/Register"
         self.logger.info(f"Registering a new user with email: {user_data.email}")
-        response_data = self.request("POST", register_url, json=user_data.to_dict())
+        response_data = self.request("POST", register_url, json=user_data.dict())
         self.logger.info("Successfully registered a new user")
 
         return response_data
@@ -50,24 +58,26 @@ class PortalCX(APIBase):
         body = {"email": email, "password": password}
         self.logger.info(f"Logging into PortalCX API with email: {email}")
         response_data = self.request("POST", login_url, json=body)
-        self.auth_token = response_data.get("token")
+        self.token = response_data.get("token")
         self.logger.info("Successfully logged into PortalCX API")
 
-        return self.auth_token
+        return self.token
     
-    def create_portal(self, portal_data: CustomerPortalCreateRequest) -> dict:
+    def create_project(self, project_data: CreateProjectRequest) -> dict:
         """
-        Creates a new portal with the provided data.
+        Creates a new project with the provided data.
 
-        :param portal_data: A CustomerPortalCreateRequest object containing the portal data
+        :param project_data: A CreateProjectRequest object containing the project data
         :return: The JSON response from the API
-        :raise: PortalCXError if the request fails
+        :raise: APIBaseError if the request fails
         """
-        create_portal_url = "/api/Customer/portal/create"
-        self.logger.info("Creating a new portal")
-        self.logger.info(f"Using the following data to Create Portal: {portal_data.to_dict()}")
-        response_data = self.request("POST", create_portal_url, json=portal_data.to_dict())
-        self.logger.info("Successfully created a new portal")
+        create_project_url = "/api/Admin/Project/CreateProject"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        self.logger.info("Creating a new project")
+
+        project_data_dict = project_data.dict()
+        self.logger.info(f"Using the following data to Create Project: \n{json.dumps(project_data_dict, indent=4)}")
+        #import pdb; pdb.set_trace()
+        response_data = self.request("POST", create_project_url, json=project_data_dict, headers=headers)
 
         return response_data
-

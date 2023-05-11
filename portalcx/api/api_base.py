@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-name:
 api/api_base.py
-
-description:
+---------------
 Base class for API integration in the Azure Python Function App.
 """
 
-import httpx
 from abc import ABC
+from json import JSONDecodeError
+
+import httpx
+
 from utils.logger import get_logger
 
 
@@ -90,11 +91,18 @@ class APIBase(ABC):
 
             # Check if response object is available and raise APIBaseError with status code and error message
             if hasattr(status_error, 'response') and status_error.response is not None:
-                error_message = status_error.response.json().get('errorMessage', 'Unknown error')
+
+                try:
+                    error_message = status_error.response.json().get('errorMessage', 'Unknown error')
+                except JSONDecodeError:
+                    error_message = status_error.response.text
+
                 # Log the entire response content for better debugging
                 self.logger.error(f"Error response from the API: {status_error.response.content}")
+
                 # Use the logger to log the error message before raising the error
                 self.logger.error(f"Error message from the API: {error_message}")
+
                 raise APIBaseError(status_error.response.status_code, error_message)
 
             else:

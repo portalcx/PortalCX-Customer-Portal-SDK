@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Name: user_registration.py
-
-Description:
+user_registration.py
+--------------------
 This module defines the UserRegistration class used to represent
 the data required for registering a new user in the PortalCX API.
 """
