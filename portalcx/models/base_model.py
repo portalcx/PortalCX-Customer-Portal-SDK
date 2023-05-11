@@ -32,4 +32,4 @@ class BaseModel(PydanticBaseModel):
         all attributes to be present with None values for those not
         set, you can simply use self.dict().
         """
-        return self.dict(exclude_unset=True)
+        return self.dict(exclude_unset=True, exclude_none=True)

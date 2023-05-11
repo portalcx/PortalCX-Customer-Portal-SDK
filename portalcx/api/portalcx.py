@@ -72,11 +72,14 @@ class PortalCX(APIBase):
         :raise: APIBaseError if the request fails
         """
         create_project_url = "/api/Admin/Project/CreateProject"
-        headers = {'Authorization': f'Bearer {self.token}', 'Content-Type': 'application/json'}
+        headers = {'Authorization': f'Bearer {self.token}'}
         self.logger.info("Creating a new project")
         project_data_dict = project_data.to_dict()
         self.logger.info(f"Using the following data to Create Project: \n{json.dumps(project_data_dict, indent=4)}")
-        #import pdb; pdb.set_trace()
-        response_data = self.request("POST", create_project_url, json=project_data_dict, headers=headers)
+
+        # Prepare multipart/form-data body
+        multipart_data = {key: ('', str(value)) for key, value in project_data_dict.items()}
+
+        response_data = self.request("POST", create_project_url, files=multipart_data, headers=headers)
 
         return response_data
