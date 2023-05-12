@@ -33,6 +33,7 @@ class TestCreateProject(BaseTest):
             IsEmailLogoUpdate=None,
             CountryId=1
         )
+
         response_data = self.pxc.create_project(project_data=project_data)
 
         assert response_data is not None

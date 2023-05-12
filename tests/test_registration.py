@@ -7,9 +7,7 @@ tests/test_portalcx.py
 Unit tests for the PortalCX API class.
 """
 import pytest
-
-from portalcx.api.portalcx import PortalCX
-from portalcx.models.user_registration import UserRegistration
+from portalcx.models.customer_data_registration import CustomerData
 from tests.base_test import BaseTest
 
 
@@ -20,12 +18,11 @@ class TestPortalCX(BaseTest):
         """
         Test the register function of the PortalCX API class.
         """
-        pxc = PortalCX(api_base_url=self.api_base_url)
 
         # Prepare sample registration data
-        user_data = UserRegistration(
-            email="dude@portalcx.com",
-            password="SomeRandomPassword",
+        user_data = CustomerData(
+            email="dude@dude.com",
+            password="SomePassword",
             firstName="The",
             lastName="Dude",
             phone="1234567899",
@@ -33,7 +30,7 @@ class TestPortalCX(BaseTest):
             contactPhone="9876543211"
         )
 
-        response_data = pxc.register(user_data=user_data)
+        response_data = self.pxc.register(user_data=user_data)
 
         assert response_data is not None
         assert isinstance(response_data, dict)

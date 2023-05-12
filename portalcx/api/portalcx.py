@@ -13,8 +13,8 @@ from uuid import UUID
 
 from ..utils.logger import get_logger
 
+from ..models.customer_data_registration import CustomerData
 from ..models.project_models import CreateProjectRequest
-from ..models.user_registration import UserRegistration
 from .api_base import APIBase
 
 
@@ -36,7 +36,7 @@ class PortalCX(APIBase):
     def token(self, value):
         self._token = value
 
-    def register(self, user_data: UserRegistration) -> dict:
+    def register(self, user_data: CustomerData) -> dict:
         """
         Registers a new user with the provided information.
 
