@@ -20,6 +20,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'httpx',
+        'pydantic'
     ],
 )
 

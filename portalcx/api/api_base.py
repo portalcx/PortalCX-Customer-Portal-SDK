@@ -9,15 +9,18 @@ Base class for API integration in the Azure Python Function App.
 
 from abc import ABC
 from json import JSONDecodeError
+import json
 
 import httpx
 
-from utils.logger import get_logger
+from ..utils.logger import get_logger
 
 
 class APIBaseError(Exception):
     """
     Custom exception class for APIBase errors.
+    This exception is raised when an API request fails and we're able to extract
+    a status code and error message from the response.
     """
 
     def __init__(self, status_code, error_message):
@@ -35,6 +38,7 @@ class APIBaseError(Exception):
 class APIBase(ABC):
     """
     Base class for API integration.
+    This class provides common functionality for making HTTP requests to an API.
     """
 
     def __init__(self, base_url, auth_token=None):
@@ -51,22 +55,44 @@ class APIBase(ABC):
     def process_response(self, response: httpx.Response) -> dict:
         """
         Process an HTTP response.
+        This method handles common tasks like checking the response status code
+        and converting the response content to JSON.
 
         :param response: The HTTP response
         :return: The JSON response data
         :raise: APIBaseError if the request fails
         """
-        response_data = response.json()
+        if response.status_code not in [200, 204]:  # add other success status codes if needed
+            # Try to parse the response content as JSON
+            try:
+                response_data = response.json()
+            except (JSONDecodeError, json.JSONDecodeError):
+                # If we fail to parse the response content as JSON,
+                # just assign an empty dictionary to response_data
+                response_data = {}
 
-        if response.status_code != 200:
             self.logger.error(f"API request failed: {response_data.get('errorMessage', 'Unknown error')}")
             raise APIBaseError(response.status_code, response_data.get('errorMessage', 'Unknown error'))
 
-        return response_data
+        # If the status code indicates success, try to return the response data
+        try:
+            # Temp to handle the deleted object response thats erroring out
+            if 'deleted' in response.text:
+                return_response = response.text
+            else:
+                return_response = response.json()
+        except (JSONDecodeError, json.JSONDecodeError):
+            if response.text:
+                return_response = response.text
+            else:
+                return_response = {}
+
+        return return_response
 
     def request(self, method, endpoint, **kwargs):
         """
         Make an HTTP request to the specified API endpoint.
+        This method wraps the httpx.request function and provides additional error handling.
 
         :param method: The HTTP method to use (e.g., 'GET', 'POST', etc.)
         :param endpoint: The API endpoint to call
@@ -74,7 +100,7 @@ class APIBase(ABC):
         :return: The JSON response from the API
         :raise: APIBaseError if the request fails
         """
-        url = f"{self.base_url}{endpoint}"
+        url = f"{        self.base_url}{endpoint}"
         headers = kwargs.pop('headers', {})
 
         # Add the authentication token to headers if it exists
@@ -118,4 +144,3 @@ class APIBase(ABC):
 
         # Process the JSON response using process_response method
         return self.process_response(response)
-

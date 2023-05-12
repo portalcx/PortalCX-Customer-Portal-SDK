@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Name: utils/logger.py
-
-Description:
-
+utils/logger.py
+---------------
 Logger for PortalCX SDK.
 """
 

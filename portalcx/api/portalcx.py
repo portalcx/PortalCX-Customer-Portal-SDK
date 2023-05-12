@@ -8,9 +8,10 @@ Class representing the PortalCX API.
 """
 
 import json
-from typing import Dict
+from typing import Union
+from uuid import UUID
 
-from utils.logger import get_logger
+from ..utils.logger import get_logger
 
 from ..models.project_models import CreateProjectRequest
 from ..models.user_registration import UserRegistration
@@ -34,7 +35,7 @@ class PortalCX(APIBase):
     @token.setter
     def token(self, value):
         self._token = value
-    
+
     def register(self, user_data: UserRegistration) -> dict:
         """
         Registers a new user with the provided information.
@@ -62,7 +63,7 @@ class PortalCX(APIBase):
         self.logger.info("Successfully logged into PortalCX API")
 
         return self.token
-    
+
     def create_project(self, project_data: CreateProjectRequest) -> dict:
         """
         Creates a new project with the provided data.
@@ -81,5 +82,22 @@ class PortalCX(APIBase):
         multipart_data = {key: ('', str(value)) for key, value in project_data_dict.items()}
 
         response_data = self.request("POST", create_project_url, files=multipart_data, headers=headers)
+
+        return response_data
+
+    def delete_project(self, project_id: Union[str, UUID]) -> None:
+        """
+        Delete a project.
+
+        :param project_id: The UUID of the project to delete
+        :return: None
+        :raise: APIBaseError if the request fails
+        """
+        delete_project_url = "/api/Admin/Project/DeleteProject"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        self.logger.info(f"Deleting the project with ID: {project_id}")
+        params = {'projectId': str(project_id)}
+
+        response_data = self.request("DELETE", delete_project_url, params=params, headers=headers)
 
         return response_data

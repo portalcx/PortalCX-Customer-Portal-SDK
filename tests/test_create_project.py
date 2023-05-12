@@ -38,3 +38,6 @@ class TestCreateProject(BaseTest):
         assert response_data is not None
         assert isinstance(response_data, str)
         assert re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', response_data) is not None
+        
+        # Delete project
+        self.pxc.delete_project(project_id=response_data)

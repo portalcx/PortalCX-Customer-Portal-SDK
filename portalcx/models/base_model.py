@@ -26,10 +26,5 @@ class BaseModel(PydanticBaseModel):
         Convert the model object to a dictionary.
 
         :return: A dictionary representation of the model object
-        
-        Note that dict(exclude_unset=True) will exclude attributes
-        that are not set from the resulting dictionary, if you want
-        all attributes to be present with None values for those not
-        set, you can simply use self.dict().
         """
         return self.dict(exclude_unset=True, exclude_none=True)

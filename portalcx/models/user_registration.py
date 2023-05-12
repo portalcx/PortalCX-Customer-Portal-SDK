@@ -25,7 +25,7 @@ class UserRegistration(BaseModel):
         :param phone: The phone number of the user (optional)
         :param companyName: The name of the company creating a new account
         :param contactPhone: The phone number of the company creating a new account
-        
+
         """
         self.email = email
         self.password = password
