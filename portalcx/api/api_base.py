@@ -19,8 +19,6 @@ from ..utils.logger import get_logger
 class APIBaseError(Exception):
     """
     Custom exception class for APIBase errors.
-    This exception is raised when an API request fails and we're able to extract
-    a status code and error message from the response.
     """
 
     def __init__(self, status_code, error_message):
@@ -38,7 +36,6 @@ class APIBaseError(Exception):
 class APIBase(ABC):
     """
     Base class for API integration.
-    This class provides common functionality for making HTTP requests to an API.
     """
 
     def __init__(self, base_url, auth_token=None):
@@ -51,32 +48,40 @@ class APIBase(ABC):
         self.base_url = base_url
         self.auth_token = auth_token
         self.logger = get_logger()
-    
+
     def process_response(self, response: httpx.Response) -> dict:
         """
         Process an HTTP response.
-        This method handles common tasks like checking the response status code
-        and converting the response content to JSON.
 
         :param response: The HTTP response
         :return: The JSON response data
         :raise: APIBaseError if the request fails
         """
         if response.status_code not in [200, 204]:  # add other success status codes if needed
-            # Try to parse the response content as JSON
-            try:
-                response_data = response.json()
-            except (JSONDecodeError, json.JSONDecodeError):
-                # If we fail to parse the response content as JSON,
-                # just assign an empty dictionary to response_data
-                response_data = {}
+            self.handle_error_response(response)
 
-            self.logger.error(f"API request failed: {response_data.get('errorMessage', 'Unknown error')}")
-            raise APIBaseError(response.status_code, response_data.get('errorMessage', 'Unknown error'))
+        return self.parse_response_data(response)
 
-        # If the status code indicates success, try to return the response data
+    def handle_error_response(self, response: httpx.Response):
+        """
+        Handle error HTTP response.
+
+        :param response: The HTTP response
+        :raise: APIBaseError
+        """
+        response_data = self.parse_response_data(response)
+        self.logger.error(f"API request failed: {response_data.get('errorMessage', 'Unknown error')}")
+        raise APIBaseError(response.status_code, response_data.get('errorMessage', 'Unknown error'))
+
+    def parse_response_data(self, response: httpx.Response) -> dict:
+        """
+        Parse HTTP response data.
+
+        :param response: The HTTP response
+        :return: The parsed response data
+        """
         try:
-            # Temp to handle the deleted object response thats erroring out
+            # temporary until we return only JSON from api.portalcx.com
             if 'deleted' in response.text:
                 return_response = response.text
             else:
@@ -92,7 +97,6 @@ class APIBase(ABC):
     def request(self, method, endpoint, **kwargs):
         """
         Make an HTTP request to the specified API endpoint.
-        This method wraps the httpx.request function and provides additional error handling.
 
         :param method: The HTTP method to use (e.g., 'GET', 'POST', etc.)
         :param endpoint: The API endpoint to call
@@ -100,7 +104,7 @@ class APIBase(ABC):
         :return: The JSON response from the API
         :raise: APIBaseError if the request fails
         """
-        url = f"{        self.base_url}{endpoint}"
+        url = f"{self.base_url}{endpoint}"
         headers = kwargs.pop('headers', {})
 
         # Add the authentication token to headers if it exists
@@ -111,36 +115,69 @@ class APIBase(ABC):
         try:
             response = httpx.request(method, url, headers=headers, **kwargs)
             response.raise_for_status()
-
         except httpx.HTTPStatusError as status_error:
-            self.logger.error(f"API request failed with status error: {status_error}")
-
-            # Check if response object is available and raise APIBaseError with status code and error message
-            if hasattr(status_error, 'response') and status_error.response is not None:
-
-                try:
-                    error_message = status_error.response.json().get('errorMessage', 'Unknown error')
-                except JSONDecodeError:
-                    error_message = status_error.response.text
-
-                # Log the entire response content for better debugging
-                self.logger.error(f"Error response from the API: {status_error.response.content}")
-
-                # Use the logger to log the error message before raising the error
-                self.logger.error(f"Error message from the API: {error_message}")
-
-                raise APIBaseError(status_error.response.status_code, error_message)
-
-            else:
-                raise
-
+            self.handle_http_status_error(status_error)
         except httpx.RequestError as request_error:
-            self.logger.error(f"API request failed with request error: {request_error}")
-            raise
-
+            self.handle_request_error(request_error)
         except Exception as e:
-            self.logger.error(f"API request failed: {e}")
-            raise
+            self.handle_generic_error(e)
 
         # Process the JSON response using process_response method
         return self.process_response(response)
+
+    def handle_http_status_error(self, status_error: httpx.HTTPStatusError):
+        """
+        Handle httpx HTTP status errors.
+
+        :param status_error: The httpx HTTPStatusError
+        :raise: APIBaseError
+        """
+        self.logger.error(f"API request failed with status error: {status_error}")
+
+        # Check if response object is available and raise APIBaseError with status code and error message
+        if hasattr(status_error, 'response') and status_error.response is not None:
+            error_message = self.get_error_message_from_response(status_error.response)
+
+            # Log the entire response content for better debugging
+            self.logger.error(f"Error response from the API: {status_error.response.content}")
+
+            # Use the logger to log the error message before raising the error
+            self.logger.error(f"Error message from the API: {error_message}")
+
+            raise APIBaseError(status_error.response.status_code, error_message)
+        else:
+            raise
+
+    def handle_request_error(self, request_error: httpx.RequestError):
+        """
+        Handle httpx request errors.
+
+        :param request_error: The httpx RequestError
+        :raise: request_error
+        """
+        self.logger.error(f"API request failed with request error: {request_error}")
+        raise
+
+    def handle_generic_error(self, e: Exception):
+        """
+        Handle generic errors.
+
+        :param e: The error
+        :raise: e
+        """
+        self.logger.error(f"API request failed: {e}")
+        raise
+
+    def get_error_message_from_response(self, response: httpx.Response) -> str:
+        """
+        Extract error message from httpx response.
+
+        :param response: The httpx response
+        :return: The error message
+        """
+        try:
+            error_message = response.json().get('errorMessage', 'Unknown error')
+        except JSONDecodeError:
+            error_message = response.text
+
+        return error_message
