@@ -7,7 +7,7 @@ tests/test_portalcx.py
 Unit tests for the PortalCX API class.
 """
 import pytest
-from portalcx.models.customer_data_registration import CustomerData
+from portalcx.models.register_customer import CustomerData
 from tests.base_test import BaseTest
 
 
