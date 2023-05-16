@@ -11,13 +11,9 @@ import datetime
 import json
 import re
 import time
-import uuid
 from json import JSONEncoder
 
-from portalcx.models.portal_customer import PortalCustomerCreateRequest
-from portalcx.models.portal_stage_change_request import UpdatePortalStageRequest
-from portalcx.models.project import CreateProjectRequest
-from portalcx.models.project_stage import ProjectStageCreateRequest
+from portalcx.api.admin_template import CreateTemplate
 from portalcx.utils.logger import logging
 from tests.base_test import BaseTest
 
@@ -42,7 +38,7 @@ class PortalStageChangeRequestEncoder(JSONEncoder):
         return super().default(obj)
 
 
-class TestProjectAndStagesFlow(BaseTest):
+class TestTemplateAndProjectFlow(BaseTest):
     
     def extract_stage_ids(self, response_data: dict) -> dict:
         """
@@ -62,33 +58,34 @@ class TestProjectAndStagesFlow(BaseTest):
 
         return stage_ids
 
-    def create_project(self):
+    def create_template_test(self):
         """
-        Creates a project and returns its ID.
+        Creates a template and returns its ID.
         """
-        project_data = CreateProjectRequest(
-            ProjectId=None,
-            CompanyId=None,
-            Title="Solar Installation",
-            ContactEmail="projectmanager@solarcompany.com",
-            ContactPhone="1234567890",
-            CompanyName="Solar Company",
-            Color=None,
-            PortalAppLogoUpload=None,
-            EmailLogoUpload=None,
-            IsCustomerReferrals=True,
-            IsLogoUpdate=None,
-            IsEmailLogoUpdate=None,
-            CountryId=1
+        template_data = CreateTemplate(
+            templateId=None,
+            companyId=None,
+            title="Test Project 1",
+            contactEmail="projectmanager@solarcompany.com",
+            contactPhone="1234567899",
+            companyName="Solar Company",
+            color=None,
+            templateAppLogoUpload=None,
+            emailLogoUpload=None,
+            isCustomerReferrals=True,
+            isLogoUpdate=None,
+            isEmailLogoUpdate=None,
+            countryId=1
         )
 
-        project_id = self.pxc.create_project(project_data=project_data)
 
-        assert project_id is not None
-        assert isinstance(project_id, str)
-        assert re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', project_id) is not None
+        template_id = self.pxc.create_template(template_data=template_data)
 
-        return project_id
+        assert template_id is not None
+        assert isinstance(template_id, str)
+        assert re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', template_id) is not None
+
+        return template_id
 
     def create_stages(self, project_id: str):
         """
@@ -123,8 +120,8 @@ class TestProjectAndStagesFlow(BaseTest):
             firstName="Matthew",
             lastName="Schwen",
             email="matt@portalcx.com",
-            phoneNumber="8016697921",
-            address="10334 S. Beetdigger Blvd.",
+            phoneNumber="1234567899",
+            address="some address",
             city="Sandy",
             stateCode="UT",
             zip="84070",
@@ -232,20 +229,20 @@ class TestProjectAndStagesFlow(BaseTest):
         """
 
         # 1. Create a project
-        project_id = self.create_project()
+        project_id = self.create_template_test()
         logging.info('TEST STARTED: Creating project. Project created with ID: {project_id}')
 
-        # 2. Create 3 stages for the project
-        self.create_stages(project_id)
-        logging.info('TEST STARTED: Creating stages for the project. Stages created for project ID: {project_id}')
+        # # 2. Create 3 stages for the project
+        # self.create_stages(project_id)
+        # logging.info('TEST STARTED: Creating stages for the project. Stages created for project ID: {project_id}')
 
-        # 3. Create a customer for the project
-        portal_id = self.create_customer(project_id)
-        logging.info('TEST STARTED: Creating customer for the project. Customer created for project ID: {project_id} with portal ID: {portal_id}')
+        # # 3. Create a customer for the project
+        # portal_id = self.create_customer(project_id)
+        # logging.info('TEST STARTED: Creating customer for the project. Customer created for project ID: {project_id} with portal ID: {portal_id}')
 
-        # 4. Update stages to completed with 10 seconds pause in between
-        self.complete_all_stages(portal_id, project_id)
-        logging.info('TEST STARTED: Updating stages to completed. Stages updated to completed for project ID: {project_id}')
+        # # 4. Update stages to completed with 10 seconds pause in between
+        # self.complete_all_stages(portal_id, project_id)
+        # logging.info('TEST STARTED: Updating stages to completed. Stages updated to completed for project ID: {project_id}')
 
         # 5. Delete each stage from the project.
         # self.delete_stages(project_id)

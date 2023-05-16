@@ -40,6 +40,7 @@ class BaseModel(PydanticBaseModel):
         orm_mode = True
         alias_generator = to_camel
         allow_population_by_field_name = True
+        allow_population_by_alias = True
 
     def to_dict(self) -> Dict[str, Any]:
         """

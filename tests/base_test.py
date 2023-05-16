@@ -11,7 +11,7 @@ import os
 
 import pytest
 
-from portalcx.api.portalcx import PortalCX
+from portalcx import PortalCX
 
 
 class BaseTest:
@@ -25,7 +25,7 @@ class BaseTest:
         self.email = os.environ.get("PORTALCX_EMAIL")
         self.password = os.environ.get("PORTALCX_PASSWORD")
 
-        self.pxc = PortalCX(api_base_url=self.api_base_url)
+        self.pxc = PortalCX(base_url=self.api_base_url)
         request.cls.pxc = self.pxc
 
         auth_token = self.pxc.login(email=self.email, password=self.password)

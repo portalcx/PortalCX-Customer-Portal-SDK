@@ -7,11 +7,11 @@ tests/test_portalcx.py
 Unit tests for the PortalCX API class.
 """
 import pytest
-from portalcx.models.register_customer import CustomerData
 from tests.base_test import BaseTest
+from portalcx.models.auth_management_models import AuthManagementRegister
 
 
-class TestPortalCX(BaseTest):
+class TestAuthManagementRegister(BaseTest):
 
     @pytest.mark.skip(reason="Already Registered")
     def test_register(self):
@@ -20,11 +20,11 @@ class TestPortalCX(BaseTest):
         """
 
         # Prepare sample registration data
-        user_data = CustomerData(
-            email="dude@dude.com",
-            password="SomePassword",
-            firstName="The",
-            lastName="Dude",
+        user_data = AuthManagementRegister(
+            email="dillonschwen@gmail.com",
+            password="Valid2022!",
+            firstName="Dillon",
+            lastName="Schwen",
             phone="1234567899",
             companyName="The Dudes Company",
             contactPhone="9876543211"

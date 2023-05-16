@@ -14,6 +14,7 @@ import json
 import httpx
 
 from ..utils.logger import get_logger
+from abc import ABC
 
 
 class APIBaseError(Exception):
@@ -37,7 +38,6 @@ class APIBase(ABC):
     """
     Base class for API integration.
     """
-
     def __init__(self, base_url, auth_token=None):
         """
         Initialize the API base class with base URL and optional authentication token.
@@ -48,6 +48,16 @@ class APIBase(ABC):
         self.base_url = base_url
         self.auth_token = auth_token
         self.logger = get_logger()
+        self._token = None
+
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        self._token = value
+        self.auth_token = value
 
     def process_response(self, response: httpx.Response) -> dict:
         """
