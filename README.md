@@ -28,8 +28,125 @@ To ensure the integrity of the code, it's recommended to run the provided tests.
 To run the tests, navigate to the root directory of the project in your terminal and run the following command:
 
 ```bash
-python -m unittest discover -v
+python -m pytest
 ```
+
+## Test Flow
+
+- [API Documentation - Development](https://apidev.portalcx.io/swagger/v1/swagger)
+- [API Documentation - Production](https://apidev.portalcx.io/swagger/v1/swagger)
+
+1. Register New Customer: `/api/AuthManagement/Register`
+<details>
+    <summary>Expand For JSON</summary>
+```json
+"/api/AuthManagement/Register": {
+    "post": {
+    "tags": [
+        "AuthManagement"
+    ],
+    "requestBody": {
+        "content": {
+        "application/json": {
+            "schema": {
+            "$ref": "#/components/schemas/UserRegistrationRequestDto"
+            }
+        },
+        "text/json": {
+            "schema": {
+            "$ref": "#/components/schemas/UserRegistrationRequestDto"
+            }
+        },
+        "application/*+json": {
+            "schema": {
+            "$ref": "#/components/schemas/UserRegistrationRequestDto"
+            }
+        }
+        }
+    },
+    "responses": {
+        "200": {
+        "description": "Success"
+        }
+    }
+    }
+},
+"UserRegistrationRequestDto": {
+    "required": [
+        "companyName",
+        "contactPhone",
+        "email",
+        "firstName",
+        "lastName",
+        "password"
+    ],
+    "type": "object",
+    "properties": {
+        "firstName": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "lastName": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "email": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "password": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "companyName": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "companyLogoUrl": {
+            "type": "string",
+            "nullable": true
+        },
+        "companySecondaryLogoUrl": {
+            "type": "string",
+            "nullable": true
+        },
+        "contactPhone": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "companyColor": {
+            "type": "string",
+            "nullable": true
+        },
+        "companyId": {
+            "type": "integer",
+            "format": "int64"
+        }
+    },
+    "additionalProperties": false
+}
+```
+</details>
+
+
+1. Login:  `/api/AuthManagement/Login`
+```json
+"application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+```
+1. Create New Template: `/api/Admin/Template/CreateTemplate`
+2. 
+3. Create Stages based off Template ID
+	1. Add stages with all different options
+4. Create New Project
+5. Ensure Txt's are going out
+6. Complete one stage
+7.  Update a project with new Name or Email or whatever
+8.  Delete project
+11. Delete template
 
 ## Contributing
 We welcome contributions to this project! To get started, follow these steps:

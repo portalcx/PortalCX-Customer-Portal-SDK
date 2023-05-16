@@ -82,7 +82,7 @@ class APIBase(ABC):
         """
         try:
             # temporary until we return only JSON from api.portalcx.com
-            if 'deleted' in response.text or 'Project Stage created successfully' in response.text:
+            if 'deleted' in response.text or 'Project' in response.text or 'Portal' in response.text:
                 return_response = response.text
             else:
                 return_response = response.json()

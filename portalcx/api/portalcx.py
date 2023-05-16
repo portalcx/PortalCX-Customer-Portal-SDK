@@ -11,9 +11,11 @@ import json
 from typing import Union
 from uuid import UUID
 
-from ..models.register_customer import CustomerData
+from ..models.portal_customer import PortalCustomerCreateRequest
+from ..models.portal_stage_change_request import UpdatePortalStageRequest
 from ..models.project import CreateProjectRequest
 from ..models.project_stage import ProjectStageCreateRequest
+from ..models.register_customer import CustomerData
 from ..utils.logger import get_logger
 from .api_base import APIBase
 
@@ -139,7 +141,6 @@ class PortalCX(APIBase):
 
         return response_data
 
-
     def delete_project_stage(self, project_stage_id: int) -> None:
         """
         Delete a project stage.
@@ -156,3 +157,45 @@ class PortalCX(APIBase):
         response_data = self.request("DELETE", delete_project_stage_url, params=params, headers=headers)
 
         return response_data
+    
+    def create_customer(self, customer_data: PortalCustomerCreateRequest) -> dict:
+        """
+        Creates a new customer with the provided data.
+
+        :param customer_data: A PortalCustomerCreateRequest object containing the customer data
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        create_customer_url = "/api/Admin/Customer/create"
+        headers = {'Authorization': f'Bearer {self.token}', 'Content-Type': 'application/json'}
+        self.logger.info("Creating a new customer")
+
+        # Convert the customer data to a dictionary and then to a JSON string
+        customer_data_json = json.dumps(customer_data.to_dict())
+        self.logger.info(f"Using the following data to Create Customer: \n{json.dumps(customer_data.to_dict(), indent=4)}")
+
+        response_data = self.request("POST", create_customer_url, content=customer_data_json, headers=headers)
+
+        return response_data
+    
+    def update_project_stage(self, portal_stage_change_request: UpdatePortalStageRequest) -> dict:
+        """
+        Updates a project stage to completed status.
+
+        :param portal_stage_change_request: A PortalStageChangeRequest object containing the stage update data
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        update_stage_url = "/api/Admin/Portal/StageChange"
+        headers = {'Authorization': f'Bearer {self.token}', 'Content-Type': 'application/json'}
+        self.logger.info("Updating a project stage to completed status")
+
+        stage_data_json = json.dumps(portal_stage_change_request.to_dict())
+
+        self.logger.info(f"Using the following data to Update Project Stage: \n{portal_stage_change_request.json(indent=4)}")
+
+        response_data = self.request("POST", update_stage_url, content=stage_data_json, headers=headers)
+
+        return response_data
+
+
