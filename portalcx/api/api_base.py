@@ -157,8 +157,6 @@ class APIBase(ABC):
 
         return response_data
 
-
-
     def request(self, method, endpoint, **kwargs):
         """
         Make an HTTP request to the specified API endpoint.
