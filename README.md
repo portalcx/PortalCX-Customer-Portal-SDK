@@ -971,7 +971,7 @@ We welcome contributions to this project! To get started, follow these steps:
 3. Write tests for your changes.
 4. Implement your changes.
 5. Run the tests and make sure they pass.
-6. Submit a pull request.
+6. Submit a pull request with test output in the summary.
 
 ## License
 This project is licensed under the MIT License, which means that you are free to use, modify, and distribute the code as long as the original copyright and license notice are included.
