@@ -21,10 +21,10 @@ class TestAuthManagementRegister(BaseTest):
 
         # Prepare sample registration data
         user_data = AuthManagementRegister(
-            email="test@portalcx.com",
-            password="SomePassword",
-            firstName="The",
-            lastName="Dude",
+            email="dillonschwen@gmail.com",
+            password="Valid2022!",
+            firstName="Dillon",
+            lastName="Schwen",
             phone="1234567899",
             companyName="The Dudes Company",
             contactPhone="9876543211"
