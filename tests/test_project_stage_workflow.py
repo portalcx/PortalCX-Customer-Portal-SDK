@@ -18,6 +18,7 @@ import pytest
 from portalcx.api.admin_template import CreateTemplate, TemplateStageCreateRequest
 from portalcx.utils.logger import logging
 from tests.base_test import BaseTest
+from tests.base_test import AssertResponse
 
 
 class PortalStageChangeRequestEncoder(JSONEncoder):
@@ -82,15 +83,14 @@ class TestTemplateAndProjectFlow(BaseTest):
         )
 
 
-        template_id = self.pxc.create_template(template_data=template_data)
+        response_data = self.pxc.create_template(template_data=template_data)
 
-        # Assertion: Check if the value is a string
+        AssertResponse.assert_status_code(response_data, 200)
+        # AssertResponse.assert_message(response_data, "some string")
+        AssertResponse.assert_data(response_data, None) 
+        template_id = response_data['message'].replace('"', '')
         assert isinstance(template_id, str)
-
-        # Assertion: Check if the value matches the UUID format
-        template_id = template_id.replace('"', '')
         assert re.match(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$", template_id) is not None
-
 
         return template_id
 
@@ -99,6 +99,20 @@ class TestTemplateAndProjectFlow(BaseTest):
         """
         Creates three template stages and returns their IDs.
         """
+        
+        def assert_data_stage_response(response_data: dict):
+            data = response_data['data']
+            assert isinstance(data, dict), "data is not a dictionary"
+            assert 'name' in data, "name key is not in data"
+            assert isinstance(data['name'], str), "name is not a string"
+            assert 'description' in data, "description key is not in data"
+            assert isinstance(data['description'], str), "description is not a string"
+            assert 'button_copy' in data, "button_copy key is not in data"
+            assert isinstance(data['button_copy'], str), "button_copy is not a string"
+            assert 'button_url' in data, "button_url key is not in data"
+            assert isinstance(data['button_url'], str), "button_url is not a string"
+            assert re.match(r"https?://\S+", data['button_url']), "button_url is not a valid URL"
+
         # Get the templateId from the previous test
         template_id = self.test_create_template()
 
@@ -133,9 +147,14 @@ class TestTemplateAndProjectFlow(BaseTest):
                 stagePromptButtonUrl=data["button_url"]
             )
 
-            response = self.pxc.create_template_stage(stage_data=stage_request)
+            response_data = self.pxc.create_template_stage(stage_data=stage_request)
+            
+            AssertResponse.assert_status_code(response_data, 200)
+            AssertResponse.assert_message(response_data, "Template Stage created successfully")
+            AssertResponse.assert_data(response_data, None)
 
-            assert response == 'Template Stage created successfully'
+            if isinstance(response_data['data'], dict):
+                assert_data_stage_response(response_data)
 
     def test_project_and_stages_flow(self):
         """

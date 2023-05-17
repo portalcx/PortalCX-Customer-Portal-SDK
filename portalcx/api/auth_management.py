@@ -57,7 +57,7 @@ class AuthManagement(APIBase):
         response_data = self.request("POST", login_url, json=user_login_request.to_dict())
 
         # Save the token
-        self.token = response_data.get("token")
+        self.token = response_data['data'].get('token')
 
         self.logger.info("Successfully logged into PortalCX API")
 

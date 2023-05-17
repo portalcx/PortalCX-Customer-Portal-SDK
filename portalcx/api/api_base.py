@@ -128,30 +128,36 @@ class APIBase(ABC):
         self.logger.error(f"API request failed: {response_data.get('errorMessage', 'Unknown error')}")
         raise APIBaseError(response.status_code, response_data.get('errorMessage', 'Unknown error'))
 
-    def parse_response_data(self, response: httpx.Response) -> Union[dict, str]:
+    def parse_response_data(self, response: httpx.Response) -> dict:
         """
         Parse HTTP response data.
 
         :param response: The HTTP response
         :return: The parsed response data
         """
+        # Initialize an empty dictionary for the response
+        response_data = {"status": response.status_code, "message": "", "data": None}
+
         # Check if the response text contains JSON elements
         if any(char in response.text for char in ['{', '[']):
             try:
-                json_data = orjson.loads(response.text)
-                return json_data
+                response_data["data"] = orjson.loads(response.text)
             except OrjsonDecodeError:
                 try:
-                    return response.orjson()
+                    response_data["data"] = response.orjson()
                 except Exception as _exc:
                     self.logger.error(
                         f"Error parsing JSON. Status code: {response.status_code}, "
                         "Headers: {response.headers}, Text: {response.text}\n"
                         "Error: {_exc}"
                     )
-                    return response.text
+                    raise ValueError("Error parsing JSON")
         else:
-            return response.text
+            response_data["message"] = response.text
+
+        return response_data
+
+
 
     def request(self, method, endpoint, **kwargs):
         """

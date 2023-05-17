@@ -34,3 +34,17 @@ class BaseTest:
 
         self.pxc.token = auth_token
         request.cls.token = auth_token
+
+class AssertResponse:
+
+    @staticmethod
+    def assert_status_code(response_data, expected_status):
+        assert response_data['status'] == expected_status, f"Expected status code {expected_status}, got {response_data['status']}"
+
+    @staticmethod
+    def assert_message(response_data, expected_message):
+        assert response_data['message'] == expected_message, f"Expected message '{expected_message}', got '{response_data['message']}'"
+
+    @staticmethod
+    def assert_data(response_data, expected_data):
+        assert response_data['data'] == expected_data, f"Expected data '{expected_data}', got '{response_data['data']}'"
