@@ -15,7 +15,7 @@ pip install git+https://github.com/portalcx/PortalCX-Customer-Portal-SDK.git
 Here is a simple example of how to use the SDK in your application:
 
 ```python
-from portalcx.api.portalcx import PortalCX
+from portalcx import PortalCX
 
 pxc = PortalCX(api_base_url="https://api.portalcx.com")
 

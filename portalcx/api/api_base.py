@@ -14,7 +14,6 @@ import json
 import httpx
 
 from ..utils.logger import get_logger
-from abc import ABC
 
 
 class APIBaseError(Exception):
@@ -46,18 +45,62 @@ class APIBase(ABC):
         :param auth_token: The authentication token (optional)
         """
         self.base_url = base_url
-        self.auth_token = auth_token
+        self._auth_token = auth_token
         self.logger = get_logger()
-        self._token = None
 
     @property
-    def token(self):
-        return self._token
+    def auth_token(self):
+        return self._auth_token
 
-    @token.setter
-    def token(self, value):
-        self._token = value
-        self.auth_token = value
+    @auth_token.setter
+    def auth_token(self, value):
+        self._auth_token = value
+
+    def get(self, endpoint, **kwargs):
+        """
+        Send a GET request to the specified API endpoint.
+        """
+        return self._request("GET", endpoint, **kwargs)
+
+    def post(self, endpoint, **kwargs):
+        """
+        Send a POST request to the specified API endpoint.
+        """
+        return self._request("POST", endpoint, **kwargs)
+
+    def put(self, endpoint, **kwargs):
+        """
+        Send a PUT request to the specified API endpoint.
+        """
+        return self._request("PUT", endpoint, **kwargs)
+
+    def delete(self, endpoint, **kwargs):
+        """
+        Send a DELETE request to the specified API endpoint.
+        """
+        return self._request("DELETE", endpoint, **kwargs)
+
+    def _request(self, method, endpoint, **kwargs):
+        """
+        Make an HTTP request to the specified API endpoint.
+
+        :param method: The HTTP method to use (e.g., 'GET', 'POST', etc.)
+        :param endpoint: The API endpoint to call
+        :param kwargs: Additional arguments to pass to the httpx.request method
+        :return: The JSON response from the API
+        """
+        url = f"{self.base_url}{endpoint}"
+        headers = kwargs.pop('headers', {})
+
+        # Add the authentication token to headers if it exists
+        if self.auth_token:
+            headers['Authorization'] = f"Bearer {self.auth_token}"
+
+        # Use httpx to make the request
+        response = httpx.request(method, url, headers=headers, **kwargs)
+
+        # Process the JSON response using process_response method
+        return self.process_response(response)
 
     def process_response(self, response: httpx.Response) -> dict:
         """
@@ -74,7 +117,7 @@ class APIBase(ABC):
 
     def handle_error_response(self, response: httpx.Response):
         """
-        Handle error HTTP response.
+                Handle error HTTP response.
 
         :param response: The HTTP response
         :raise: APIBaseError
@@ -91,18 +134,12 @@ class APIBase(ABC):
         :return: The parsed response data
         """
         try:
-            # temporary until we return only JSON from api.portalcx.com
-            if 'deleted' in response.text or 'Project' in response.text or 'Portal' in response.text:
-                return_response = response.text
-            else:
-                return_response = response.json()
+            return response.json()
         except (JSONDecodeError, json.JSONDecodeError):
             if response.text:
-                return_response = response.text
+                return {'message': response.text}
             else:
-                return_response = {}
-
-        return return_response
+                return {}
 
     def request(self, method, endpoint, **kwargs):
         """

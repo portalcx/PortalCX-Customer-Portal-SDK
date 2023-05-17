@@ -7,7 +7,10 @@
             "module": "pytest",
             "python": "${workspaceFolder}/.venv/bin/python", 
             "cwd": "${workspaceFolder}",
-            "args": ["tests"],
+            "args": [
+                "tests",
+                "--log-cli-level=INFO"
+            ],
         }
     ]
 }
