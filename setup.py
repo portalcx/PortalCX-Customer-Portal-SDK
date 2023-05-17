@@ -22,7 +22,8 @@ setup(
         'httpx',
         'pydantic',
         'pytest',
-        'pytest-dependency'
+        'pytest-dependency',
+        'orjson'
     ],
 )
 

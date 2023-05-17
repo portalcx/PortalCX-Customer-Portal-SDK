@@ -9,9 +9,11 @@ Base class for API integration in the Azure Python Function App.
 
 from abc import ABC
 from json import JSONDecodeError
-import json
+from typing import Union
 
 import httpx
+import orjson
+from orjson import JSONDecodeError as OrjsonDecodeError
 
 from ..utils.logger import get_logger
 
@@ -126,20 +128,30 @@ class APIBase(ABC):
         self.logger.error(f"API request failed: {response_data.get('errorMessage', 'Unknown error')}")
         raise APIBaseError(response.status_code, response_data.get('errorMessage', 'Unknown error'))
 
-    def parse_response_data(self, response: httpx.Response) -> dict:
+    def parse_response_data(self, response: httpx.Response) -> Union[dict, str]:
         """
         Parse HTTP response data.
 
         :param response: The HTTP response
         :return: The parsed response data
         """
-        try:
-            return response.json()
-        except (JSONDecodeError, json.JSONDecodeError):
-            if response.text:
-                return {'message': response.text}
-            else:
-                return {}
+        # Check if the response text contains JSON elements
+        if any(char in response.text for char in ['{', '[']):
+            try:
+                json_data = orjson.loads(response.text)
+                return json_data
+            except OrjsonDecodeError:
+                try:
+                    return response.orjson()
+                except Exception as _exc:
+                    self.logger.error(
+                        f"Error parsing JSON. Status code: {response.status_code}, "
+                        "Headers: {response.headers}, Text: {response.text}\n"
+                        "Error: {_exc}"
+                    )
+                    return response.text
+        else:
+            return response.text
 
     def request(self, method, endpoint, **kwargs):
         """

@@ -15,7 +15,7 @@ from json import JSONEncoder
 
 import pytest
 
-from portalcx.api.admin_template import CreateTemplate
+from portalcx.api.admin_template import CreateTemplate, TemplateStageCreateRequest
 from portalcx.utils.logger import logging
 from tests.base_test import BaseTest
 
@@ -68,10 +68,10 @@ class TestTemplateAndProjectFlow(BaseTest):
         template_data = CreateTemplate(
             templateId=None,
             companyId=None,
-            title="Test Project 1",
+            title="Fun Internet Links",
             contactEmail="projectmanager@solarcompany.com",
             contactPhone="1234567899",
-            companyName="Solar Company",
+            companyName="Just Another Company",
             color=None,
             templateAppLogoUpload=None,
             emailLogoUpload=None,
@@ -84,14 +84,58 @@ class TestTemplateAndProjectFlow(BaseTest):
 
         template_id = self.pxc.create_template(template_data=template_data)
 
-        assert template_id is not None
+        # Assertion: Check if the value is a string
         assert isinstance(template_id, str)
-        assert re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', template_id) is not None
+
+        # Assertion: Check if the value matches the UUID format
+        template_id = template_id.replace('"', '')
+        assert re.match(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$", template_id) is not None
+
 
         return template_id
 
-    # @pytest.mark.dependency(depends=["test_create_project"])
-    # ADD CREATE STAGES
+    @pytest.mark.dependency(depends=["test_create_template"])
+    def test_create_template_stages(self, template_id):
+        """
+        Creates three template stages and returns their IDs.
+        """
+        # Get the templateId from the previous test
+        template_id = self.test_create_template()
+
+        stage_data = [
+            {
+                "name": "Stage 1 - A Soft Murmur",
+                "description": "This website allows you to customize ambient sounds (rain, thunder, waves, etc.) to create your own peaceful soundscape. It's great for focusing, meditating, or simply relaxing.",
+                "button_copy": "A Soft Murmur",
+                "button_url": "https://asoftmurmur.com/"
+            },
+            {
+                "name": "Stage 2 - The Useless Web",
+                "description": "A fun website that takes you to random, entertaining, and 'useless' websites around the internet.",
+                "button_copy": "The Useless Web",
+                "button_url": "https://theuselessweb.com/"
+            },
+            {
+                "name": "Stage 3 - Window Swap",
+                "description": "On this site, people from around the world submit videos of the view from their windows. It's a fascinating way to see different parts of the world from the comfort of your own home.",
+                "button_copy": "Window Swap",
+                "button_url": "https://window-swap.com/"
+            }
+        ]
+
+        for data in stage_data:
+            stage_request = TemplateStageCreateRequest(
+                templateStageId=None,
+                templateId=template_id,
+                stageName=data["name"],
+                stageDescription=data["description"],
+                stagePromptButtonCopy=data["button_copy"],
+                stagePromptButtonUrl=data["button_url"]
+            )
+
+            response = self.pxc.create_template_stage(stage_data=stage_request)
+
+            assert response == 'Template Stage created successfully'
 
     def test_project_and_stages_flow(self):
         """
@@ -99,13 +143,13 @@ class TestTemplateAndProjectFlow(BaseTest):
         creating a customer, deleting stages, and deleting the project.
         """
 
-        # 1. Create a project
-        project_id = self.test_create_template()
-        logging.info('TEST STARTED: Creating project. Project created with ID: {project_id}')
+        # 1. Create New Project Template
+        template_id = self.test_create_template()
+        logging.info('TEST STARTED: Creating project. Project created with ID: {template_id}')
 
-        # # 2. Create 3 stages for the project
-        # self.create_stages(project_id)
-        # logging.info('TEST STARTED: Creating stages for the project. Stages created for project ID: {project_id}')
+        # 2. Create 3 New Stages For New Project Template
+        self.test_create_template_stages(template_id)
+        logging.info('TEST STARTED: Creating stages for the project. Stages created for project ID: {template_id}')
 
         # # 3. Create a customer for the project
         # portal_id = self.create_customer(project_id)

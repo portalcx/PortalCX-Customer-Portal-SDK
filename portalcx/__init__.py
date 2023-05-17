@@ -7,7 +7,7 @@ This module contains the PortalCX class which serves as the main entry point for
 from .api.admin_template import AdminTemplate
 from .api.auth_management import AuthManagement
 from .models.auth_management_models import AuthManagementRegister
-from .models.admin_template_models import CreateTemplate
+from .models.admin_template_models import CreateTemplate, TemplateStageCreateRequest
 from .utils.logger import get_logger
 
 
@@ -70,3 +70,12 @@ class PortalCX:
         :return: The JSON response from the API
         """
         return self.admin_template.create_template_request(template_data)
+
+    def create_template_stage(self, stage_data: TemplateStageCreateRequest) -> dict:
+        """
+        Creates a new template stage with the provided information.
+
+        :param stage_data: A TemplateStageCreateRequest object containing the stage information
+        :return: The JSON response from the API
+        """
+        return self.admin_template.create_template_stage_request(stage_data)

@@ -10,15 +10,15 @@ This file contains models for representing Admin Template data.
 from __future__ import annotations
 
 from typing import Optional
-from uuid import UUID
 from .base_model import BaseModel
+
 
 class CreateTemplate(BaseModel):
     """
     This class represents a template creation request.
     """
 
-    templateId: Optional[UUID]
+    templateId: Optional[str]
     companyId: Optional[int]
     title: str
     contactEmail: str
@@ -32,3 +32,15 @@ class CreateTemplate(BaseModel):
     isEmailLogoUpdate: Optional[bool]
     countryId: Optional[int]
 
+
+class TemplateStageCreateRequest(BaseModel):
+    """
+    This class represents a template stage creation request.
+    """
+
+    templateStageId: Optional[str]
+    templateId: str
+    stageName: str
+    stageDescription: str
+    stagePromptButtonCopy: Optional[str]
+    stagePromptButtonUrl: Optional[str]

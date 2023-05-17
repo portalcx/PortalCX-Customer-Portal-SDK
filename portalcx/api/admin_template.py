@@ -9,7 +9,7 @@ This module represents all API calls in the /api/Admin/Template section.
 
 from typing import Dict
 
-from portalcx.models.admin_template_models import CreateTemplate
+from portalcx.models.admin_template_models import CreateTemplate, TemplateStageCreateRequest
 from .api_base import APIBase
 
 
@@ -48,5 +48,31 @@ class AdminTemplate(APIBase):
                                      headers=headers)
         
         self.logger.info("Successfully created a new template")
+
+        return response_data
+
+    def create_template_stage_request(self, stage_data: TemplateStageCreateRequest) -> Dict:
+        """
+        Creates a new template stage with the provided information.
+
+        :param stage_data: A TemplateStageCreateRequest object containing the stage information
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        create_stage_url = "/api/Admin/Template/CreateStage"
+        headers = {'Authorization': f'Bearer {self.token}'}
+
+        self.logger.info(f"Creating a new template stage with name: {stage_data.stageName}")
+
+        # Convert to JSON
+        stage_data_dict = stage_data.to_dict()
+
+        # Make the request and process the response
+        response_data = self.request("POST",
+                                     create_stage_url,
+                                     json=stage_data_dict,
+                                     headers=headers)
+
+        self.logger.info("Successfully created a new template stage")
 
         return response_data
