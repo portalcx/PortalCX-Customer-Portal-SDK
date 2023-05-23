@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-api/admin_template.py
+api/admin_templates.py
 ----------------------
 This module represents all API calls in the /api/Admin/Template section.
 """
@@ -62,7 +62,7 @@ class AdminTemplate(APIBase):
         create_stage_url = "/api/Admin/Template/CreateStage"
         headers = {'Authorization': f'Bearer {self.token}'}
 
-        self.logger.info(f"Creating a new template stage with name: {stage_data.stageName}")
+        self.logger.info(f"Creating a new template stage with name: {stage_data.stageName} for template id: {stage_data.templateId}")
 
         # Convert to JSON
         stage_data_dict = stage_data.to_dict()
@@ -76,3 +76,29 @@ class AdminTemplate(APIBase):
         self.logger.info("Successfully created a new template stage")
 
         return response_data
+
+    # def get_all_stages_by_template_id_request(self, request: GetAllStagesByTemplateIdRequest) -> Dict:
+    #     """
+    #     Fetch all the stages associated with a template using its ID.
+
+    #     :param request: An object containing the template ID
+    #     :return: The JSON response from the API
+    #     :raise: APIBaseError if the request fails
+    #     """
+    #     get_stages_url = "/api/Admin/Template/GetAllStagesByTemplateId"
+    #     headers = {'Authorization': f'Bearer {self.token}'}
+
+    #     self.logger.info(f"Fetching all stages for template with ID: {request.templateId}")
+
+    #     # Convert to JSON
+    #     request_dict = request.dict()
+
+    #     # Make the request and process the response
+    #     response_data = self.request("GET",
+    #                                  get_stages_url,
+    #                                  json=request_dict,
+    #                                  headers=headers)
+
+    #     self.logger.info("Successfully fetched all stages for the template")
+
+    #     return response_data

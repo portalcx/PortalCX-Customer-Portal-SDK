@@ -8,17 +8,18 @@ Unit tests for the workflow involving project and stage creation/deletion in the
 """
 
 import datetime
-import json
+import random
 import re
-import time
+import string
 from json import JSONEncoder
 
 import pytest
 
-from portalcx.api.admin_template import CreateTemplate, TemplateStageCreateRequest
+from portalcx.api.admin_projects import ProjectCreateRequest
+from portalcx.api.admin_templates import (CreateTemplate,
+                                          TemplateStageCreateRequest)
 from portalcx.utils.logger import logging
-from tests.base_test import BaseTest
-from tests.base_test import AssertResponse
+from tests.base_test import AssertResponse, BaseTest
 
 
 class PortalStageChangeRequestEncoder(JSONEncoder):
@@ -42,6 +43,10 @@ class PortalStageChangeRequestEncoder(JSONEncoder):
 
 
 class TestTemplateAndProjectFlow(BaseTest):
+    
+    def generate_random_string(self, length=10):
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(length))
     
     def extract_stage_ids(self, response_data: dict) -> dict:
         """
@@ -69,7 +74,7 @@ class TestTemplateAndProjectFlow(BaseTest):
         template_data = CreateTemplate(
             templateId=None,
             companyId=None,
-            title="Fun Internet Links",
+            title=f"Fun Internet Links - {self.generate_random_string()}",
             contactEmail="projectmanager@solarcompany.com",
             contactPhone="1234567899",
             companyName="Just Another Company",
@@ -81,7 +86,6 @@ class TestTemplateAndProjectFlow(BaseTest):
             isEmailLogoUpdate=None,
             countryId=1
         )
-
 
         response_data = self.pxc.create_template(template_data=template_data)
 
@@ -95,7 +99,7 @@ class TestTemplateAndProjectFlow(BaseTest):
         return template_id
 
     @pytest.mark.dependency(depends=["test_create_template"])
-    def test_create_template_stages(self, template_id):
+    def test_create_template_stages(self, template_id: str):
         """
         Creates three template stages and returns their IDs.
         """
@@ -112,9 +116,6 @@ class TestTemplateAndProjectFlow(BaseTest):
             assert 'button_url' in data, "button_url key is not in data"
             assert isinstance(data['button_url'], str), "button_url is not a string"
             assert re.match(r"https?://\S+", data['button_url']), "button_url is not a valid URL"
-
-        # Get the templateId from the previous test
-        template_id = self.test_create_template()
 
         stage_data = [
             {
@@ -156,6 +157,63 @@ class TestTemplateAndProjectFlow(BaseTest):
             if isinstance(response_data['data'], dict):
                 assert_data_stage_response(response_data)
 
+    @pytest.mark.dependency(depends=["test_create_template_stages"])
+    def test_create_project(self, template_id: str):
+        """
+        Creates a new project and returns its ID.
+        """
+        
+        def assert_project_creation_response(response_data: dict):
+            """
+            Asserts that the API response for project creation contains valid data.
+
+            :param response_data: The response data from the API.
+            """
+
+            # Assert that the necessary keys are present in the response data
+            assert 'portalId' in response_data, "'portalId' key is not present in response data"
+            assert 'message' in response_data, "'message' key is not present in response data"
+            assert 'projectId' in response_data, "'projectId' key is not present in response data"
+
+            # Assert the types and content of the response data
+            assert isinstance(response_data['portalId'], str), "'portalId' is not a string"
+            assert re.match(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$", response_data['portalId']) is not None, "'portalId' is not a valid UUID"
+            assert isinstance(response_data['message'], str), "'message' is not a string"
+            assert response_data['message'] == 'Project created successfully', "'message' does not match expected text"
+            assert isinstance(response_data['projectId'], int), "'projectId' is not an integer"
+            assert response_data['projectId'] > 0, "'projectId' is not a positive integer"
+
+
+        project_data = ProjectCreateRequest(
+            projectId=None,
+            templateId=template_id,
+            firstName="The",
+            lastName="Dude",
+            email="thedude@portalcx.com",
+            phoneNumber="8016697921",
+            addressLine1="123 Main Street",
+            addressLine2=None,
+            city="Salt Lake City",
+            stateCode="UT",
+            zip="84101",
+            notifyViaEmail=False,
+            notifyViaSMS=True,
+            completeFirstStage=False,
+            countryId=1,
+        )
+
+        response_data = self.pxc.create_project(project_data=project_data)
+
+        assert isinstance(response_data["data"], dict)
+
+        response_data_dict = response_data["data"]
+
+        AssertResponse.assert_status_code(response_data, 200)
+        AssertResponse.assert_message(response_data_dict, "Project created successfully")
+        assert_project_creation_response(response_data_dict)
+
+        return response_data_dict.get("projectID"), response_data_dict.get("portalID")
+
     def test_project_and_stages_flow(self):
         """
         Test the flow of creating a project, creating stages,
@@ -164,17 +222,19 @@ class TestTemplateAndProjectFlow(BaseTest):
 
         # 1. Create New Project Template
         template_id = self.test_create_template()
-        logging.info('TEST STARTED: Creating project. Project created with ID: {template_id}')
+        logging.info(f'TEST FINISHED: Creating project. Project created with ID: {template_id}')
 
         # 2. Create 3 New Stages For New Project Template
         self.test_create_template_stages(template_id)
-        logging.info('TEST STARTED: Creating stages for the project. Stages created for project ID: {template_id}')
+        logging.info(f'TEST FINISHED: Creating stages for template ID: {template_id}')
 
-        # # 3. Create a customer for the project
-        # portal_id = self.create_customer(project_id)
-        # logging.info('TEST STARTED: Creating customer for the project. Customer created for project ID: {project_id} with portal ID: {portal_id}')
+        # 3. Create A Project From Template ID With End User Information
+        project_id, portal_id = self.test_create_project(template_id)
+        logging.info(
+            f'TEST FINISHED: Creating project for the End User using Template ID: {template_id}, Project ID: {project_id}, Portal ID:{portal_id}'
+        )
 
-        # # 4. Update stages to completed with 10 seconds pause in between
+        # 4. Update stages to completed with 10 seconds pause in between
         # self.complete_all_stages(portal_id, project_id)
         # logging.info('TEST STARTED: Updating stages to completed. Stages updated to completed for project ID: {project_id}')
 

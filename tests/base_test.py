@@ -15,7 +15,6 @@ from portalcx import PortalCX
 
 
 class BaseTest:
-
     @pytest.fixture(autouse=True, scope='class')
     def setup_class(self, request):
         """

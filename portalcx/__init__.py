@@ -4,10 +4,13 @@ portalcx/__init__.py
 This module contains the PortalCX class which serves as the main entry point for the SDK.
 """
 
-from .api.admin_template import AdminTemplate
+from .api.admin_projects import AdminProject
+from .api.admin_templates import AdminTemplate
 from .api.auth_management import AuthManagement
+from .models.admin_project_models import ProjectCreateRequest
+from .models.admin_template_models import (CreateTemplate,
+                                           TemplateStageCreateRequest)
 from .models.auth_management_models import AuthManagementRegister
-from .models.admin_template_models import CreateTemplate, TemplateStageCreateRequest
 from .utils.logger import get_logger
 
 
@@ -30,6 +33,7 @@ class PortalCX:
         # Initialize API classes with base URL and auth token
         self.auth_management = AuthManagement(base_url)
         self.admin_template = AdminTemplate(base_url, auth_token)
+        self.admin_project = AdminProject(base_url, auth_token)
 
     @property
     def token(self):
@@ -38,10 +42,13 @@ class PortalCX:
     @token.setter
     def token(self, value):
         self.auth_token = value
+
         # Update the token in the API classes
         self.auth_management.token = value
         self.admin_template.token = value
+        self.admin_project.token = value
 
+    # _____________________________  Auth Management Section  _____________________________
     def login(self, email: str, password: str) -> str:
         """
         Logs into the PortalCX API with the provided credentials.
@@ -62,6 +69,7 @@ class PortalCX:
         """
         return self.auth_management.register(user_data)
 
+    # _____________________________ Templates Section  _____________________________
     def create_template(self, template_data: CreateTemplate) -> dict:
         """
         Creates a new template with the provided information.
@@ -79,3 +87,14 @@ class PortalCX:
         :return: The JSON response from the API
         """
         return self.admin_template.create_template_stage_request(stage_data)
+
+    # _____________________________  Projects Section  _____________________________
+
+    def create_project(self, project_data: ProjectCreateRequest) -> dict:
+        """
+        Creates a new project with the provided information.
+
+        :param project_data: A ProjectCreateRequest object containing the project information
+        :return: The JSON response from the API
+        """
+        return self.admin_project.create_project_request(project_data)

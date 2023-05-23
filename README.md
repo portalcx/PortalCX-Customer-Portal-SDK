@@ -531,7 +531,43 @@ python -m pytest
 
 <hr>
 
-<details><summary><h4>6. Complete Each Stage Until Project Complete by Project ID And Stage ID/Name</h4></summary>
+<details><summary><h4>6. Get All Stages By Template ID</h4></summary>
+
+**URL:** `/api/Admin/Template/GetAllStagesByTemplateId`
+
+**JSON Schema:**
+
+```json
+{
+    "/api/Admin/Template/GetAllStagesByTemplateId": {
+        "get": {
+            "tags": [
+                "AdminTemplate"
+            ],
+            "parameters": [
+                {
+                    "name": "templateId",
+                    "in": "query",
+                    "schema": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Success"
+                }
+            }
+        }
+    }
+}
+```
+</details>
+
+<hr>
+
+<details><summary><h4>7. Complete Each Stage Until Project Complete by Project ID And Stage ID/Name</h4></summary>
 
 **URL:** `/api/Admin/Project/ProjectStageChange`
 
@@ -646,7 +682,7 @@ python -m pytest
 
 <hr>
 
-<details><summary><h4>7. Update Project Information By Project ID</h4></summary>
+<details><summary><h4>8. Update Project Information By Project ID</h4></summary>
 
 >**Note:** Update Name And Email In Project
 
@@ -819,7 +855,7 @@ python -m pytest
 
 <hr>
 
-<details><summary><h4>8. Delete Project By Project ID</h4></summary>
+<details><summary><h4>9. Delete Project By Project ID</h4></summary>
 
 **URL:** `/api/Admin/Project/DeleteProject`
 
@@ -855,43 +891,7 @@ python -m pytest
 
 <hr>
 
-<details><summary><h4>8. Get All Stages By Template ID</h4></summary>
-
-**URL:** `/api/Admin/Template/GetAllStagesByTemplateId`
-
-**JSON Schema:**
-
-```json
-{
-    "/api/Admin/Template/GetAllStagesByTemplateId": {
-        "get": {
-            "tags": [
-                "AdminTemplate"
-            ],
-            "parameters": [
-                {
-                    "name": "templateId",
-                    "in": "query",
-                    "schema": {
-                        "type": "string",
-                        "format": "uuid"
-                    }
-                }
-            ],
-            "responses": {
-                "200": {
-                    "description": "Success"
-                }
-            }
-        }
-    }
-}
-```
-</details>
-
-<hr>
-
-<details><summary><h4>8. Delete Each Stage By Template Stage ID</h4></summary>
+<details><summary><h4>10. Delete Each Stage By Template Stage ID</h4></summary>
 
 **URL:** `/api/Admin/Template/DeleteStage`
 
@@ -927,7 +927,7 @@ python -m pytest
 
 <hr>
 
-<details><summary><h4>9. Delete Template</h4></summary>
+<details><summary><h4>11. Delete Template</h4></summary>
 
 **URL:** `/api/Admin/Project/DeleteProject`
 
