@@ -42,7 +42,7 @@ python -m pytest
 
 Try Portal Free for 14 Days!
 
-<details>
+</details>
 
 <hr>
 
