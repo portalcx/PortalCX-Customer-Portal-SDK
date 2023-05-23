@@ -35,102 +35,10 @@ python -m pytest
 
 - [API Documentation - Development](https://apidev.portalcx.io/swagger/v1/swagger)
 - [API Documentation - Production](https://apidev.portalcx.io/swagger/v1/swagger)
+
 <hr>
-<details><summary><h4>1. Register New Customer</h4></summary>
 
-**URL: `/api/AuthManagement/Register`
-
-**JSON Schema:**
-```json
-{
-    "/api/AuthManagement/Register": {
-        "post": {
-        "tags": [
-            "AuthManagement"
-        ],
-        "requestBody": {
-            "content": {
-            "application/json": {
-                "schema": {
-                "$ref": "#/components/schemas/UserRegistrationRequestDto"
-                }
-            },
-            "text/json": {
-                "schema": {
-                "$ref": "#/components/schemas/UserRegistrationRequestDto"
-                }
-            },
-            "application/*+json": {
-                "schema": {
-                "$ref": "#/components/schemas/UserRegistrationRequestDto"
-                }
-            }
-            }
-        },
-        "responses": {
-            "200": {
-            "description": "Success"
-            }
-        }
-        }
-    },
-    "UserRegistrationRequestDto": {
-        "required": [
-            "companyName",
-            "contactPhone",
-            "email",
-            "firstName",
-            "lastName",
-            "password"
-        ],
-        "type": "object",
-        "properties": {
-            "firstName": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "lastName": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "email": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "password": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "companyName": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "companyLogoUrl": {
-                "type": "string",
-                "nullable": true
-            },
-            "companySecondaryLogoUrl": {
-                "type": "string",
-                "nullable": true
-            },
-            "contactPhone": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "companyColor": {
-                "type": "string",
-                "nullable": true
-            },
-            "companyId": {
-                "type": "integer",
-                "format": "int64"
-            }
-        },
-        "additionalProperties": false
-    }
-}
-```
-</details>
+<summary><h4>1.<a href="https://signup.portalcx.com"> Register For PortalCX</a></h4></summary>
 
 <hr>
 
@@ -193,6 +101,7 @@ python -m pytest
     }
 }
 ```
+
 </details>
 
 <hr>

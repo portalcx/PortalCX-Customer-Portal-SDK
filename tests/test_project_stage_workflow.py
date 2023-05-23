@@ -58,11 +58,11 @@ class TestTemplateAndProjectFlow(BaseTest):
         stage_ids = {}
 
         # Check if the required keys exist in the response data
-        if 'data' in response_data and 'projectStages' in response_data['data']:
-            for stage in response_data['data']['projectStages']:
-                if 'stageName' in stage and 'projectStageId' in stage:
+        if 'data' in response_data and 'templateStages' in response_data['data']:
+            for stage in response_data['data']['templateStages']:
+                if 'stageName' in stage and 'templateStageId' in stage:
                     # Use the stage name as the key and the stage id as the value
-                    stage_ids[stage['stageName']] = stage['projectStageId']
+                    stage_ids[stage['stageName']] = stage['templateStageId']
 
         return stage_ids
 
@@ -212,27 +212,49 @@ class TestTemplateAndProjectFlow(BaseTest):
         AssertResponse.assert_message(response_data_dict, "Project created successfully")
         assert_project_creation_response(response_data_dict)
 
-        return response_data_dict.get("projectID"), response_data_dict.get("portalID")
+        return response_data_dict['projectId'], response_data_dict['portalId']
+
+    @pytest.mark.dependency(depends=["test_create_project"])
+    def test_get_all_stages_by_template_id(self, template_id: str):
+        """
+        Gets all stages for the specified template ID and verifies that the returned stages match those that were created.
+        """
+        response_data = self.pxc.get_all_stages_by_template_id(template_id)
+
+        AssertResponse.assert_status_code(response_data, 200)
+
+        stage_ids = self.extract_stage_ids(response_data['data'])
+
+        return stage_ids
 
     def test_project_and_stages_flow(self):
         """
         Test the flow of creating a project, creating stages,
         creating a customer, deleting stages, and deleting the project.
         """
+        log_template = '#' * 20
 
-        # 1. Create New Project Template
+        # 1. Create New Template
+        logging.info(f'{log_template} TEST 1 STARTED {log_template}\nCreating New Template...')
         template_id = self.test_create_template()
-        logging.info(f'TEST FINISHED: Creating project. Project created with ID: {template_id}')
+        logging.info(f'{log_template} TEST 1 FINISHED {log_template}\nCreated with Template ID: {template_id}')
 
-        # 2. Create 3 New Stages For New Project Template
+        # 2. Create 3 New Stages For New Template
+        logging.info(f'{log_template}TEST 2 STARTED {log_template}\nCreating 3 new stages from Template ID: {template_id} ...')
         self.test_create_template_stages(template_id)
-        logging.info(f'TEST FINISHED: Creating stages for template ID: {template_id}')
+        logging.info(f'{log_template}TEST 2 FINISHED {log_template}\nStages created for Template ID: {template_id}')
 
         # 3. Create A Project From Template ID With End User Information
+        logging.info(f'{log_template} TEST 3 STARTED {log_template}\nCreating project using Template ID: {template_id} ...')
         project_id, portal_id = self.test_create_project(template_id)
         logging.info(
-            f'TEST FINISHED: Creating project for the End User using Template ID: {template_id}, Project ID: {project_id}, Portal ID:{portal_id}'
+            f'{log_template} TEST 3 FINISHED {log_template}\nCreated project with:\nTemplate ID: {template_id}\nProject ID: {project_id}\nPortal ID: {portal_id}'
         )
+
+        # 4. Get All Stages by Template ID
+        logging.info(f'{log_template} TEST 4 STARTED {log_template}\nGet all stages with Template ID {template_id}')
+        stage_ids = self.test_get_all_stages_by_template_id(template_id)
+        logging.info(f'{log_template} TEST 4 FINISHED {log_template}\nGot all stages with Template ID {template_id}')
 
         # 4. Update stages to completed with 10 seconds pause in between
         # self.complete_all_stages(portal_id, project_id)

@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Optional
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import constr
 
 from .base_model import BaseModel
 
@@ -21,7 +21,6 @@ class CreateTemplate(BaseModel):
     """
     This class represents a template creation request.
     """
-
     templateId: Optional[str]
     companyId: Optional[int]
     title: str
@@ -41,10 +40,17 @@ class TemplateStageCreateRequest(BaseModel):
     """
     This class represents a template stage creation request.
     """
-
     templateStageId: Optional[str]
     templateId: str
     stageName: str
     stageDescription: str
     stagePromptButtonCopy: Optional[str]
     stagePromptButtonUrl: Optional[str]
+
+
+class GetAllStagesByTemplateIdParams(BaseModel):
+    """
+    This class represents the parameters for the 'GetAllStagesByTemplateId' API endpoint.
+    """
+    templateId: Optional[constr(regex=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')]
+

@@ -4,11 +4,14 @@ portalcx/__init__.py
 This module contains the PortalCX class which serves as the main entry point for the SDK.
 """
 
+from pydantic import ValidationError
+
 from .api.admin_projects import AdminProject
 from .api.admin_templates import AdminTemplate
 from .api.auth_management import AuthManagement
 from .models.admin_project_models import ProjectCreateRequest
 from .models.admin_template_models import (CreateTemplate,
+                                           GetAllStagesByTemplateIdParams,
                                            TemplateStageCreateRequest)
 from .models.auth_management_models import AuthManagementRegister
 from .utils.logger import get_logger
@@ -87,6 +90,21 @@ class PortalCX:
         :return: The JSON response from the API
         """
         return self.admin_template.create_template_stage_request(stage_data)
+    
+    def get_all_stages_by_template_id(self, template_id: str) -> dict:
+        """
+        Gets all template stages for a specific template.
+
+        :param template_id: A UUID string of the template
+        :return: The JSON response from the API
+        """
+        try:
+            GetAllStagesByTemplateIdParams(templateId=template_id)
+        except ValidationError as e:
+            self.logger.error(f"Invalid template ID: {template_id}")
+            raise e
+
+        return self.admin_template.get_all_stages_by_template_id_request(template_id)
 
     # _____________________________  Projects Section  _____________________________
 

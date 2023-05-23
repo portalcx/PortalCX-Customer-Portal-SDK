@@ -15,7 +15,6 @@ class AuthManagementRegister(BaseModel):
     """
     This class represents customer data.
     """
-
     email: str
     password: str
     contactPhone: str
@@ -29,6 +28,5 @@ class UserLoginRequest(BaseModel):
     """
     This class represents a user login request.
     """
-
     email: str
     password: str

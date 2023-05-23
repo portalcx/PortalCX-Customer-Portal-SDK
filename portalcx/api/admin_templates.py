@@ -9,7 +9,11 @@ This module represents all API calls in the /api/Admin/Template section.
 
 from typing import Dict
 
-from portalcx.models.admin_template_models import CreateTemplate, TemplateStageCreateRequest
+from portalcx.models.admin_template_models import (
+    CreateTemplate,
+    TemplateStageCreateRequest
+)
+
 from .api_base import APIBase
 
 
@@ -77,28 +81,22 @@ class AdminTemplate(APIBase):
 
         return response_data
 
-    # def get_all_stages_by_template_id_request(self, request: GetAllStagesByTemplateIdRequest) -> Dict:
-    #     """
-    #     Fetch all the stages associated with a template using its ID.
+    def get_all_stages_by_template_id_request(self, template_id: str) -> Dict:
+        """
+        Gets all template stages for a specific template.
 
-    #     :param request: An object containing the template ID
-    #     :return: The JSON response from the API
-    #     :raise: APIBaseError if the request fails
-    #     """
-    #     get_stages_url = "/api/Admin/Template/GetAllStagesByTemplateId"
-    #     headers = {'Authorization': f'Bearer {self.token}'}
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        headers = {'Authorization': f'Bearer {self.token}'}
 
-    #     self.logger.info(f"Fetching all stages for template with ID: {request.templateId}")
+        get_stages_url = f"/api/Admin/Template/GetAllStagesByTemplateId?templateId={template_id}"
 
-    #     # Convert to JSON
-    #     request_dict = request.dict()
+        self.logger.info(f"Getting all stages for Template Id: {template_id}")
+    
+        # Make the request and process the response
+        response_data = self.request("GET", get_stages_url, headers=headers)
+        
+        self.logger.info("Successfully retrieved template stages")
 
-    #     # Make the request and process the response
-    #     response_data = self.request("GET",
-    #                                  get_stages_url,
-    #                                  json=request_dict,
-    #                                  headers=headers)
-
-    #     self.logger.info("Successfully fetched all stages for the template")
-
-    #     return response_data
+        return response_data
