@@ -38,7 +38,11 @@ python -m pytest
 
 <hr>
 
-<summary><h4>1.<a href="https://signup.portalcx.com"> Register For PortalCX</a></h4></summary>
+<details><summary><h4>1.<a href="https://signup.portalcx.com"> Register For PortalCX</a></h4></summary>
+
+Try Portal Free for 14 Days!
+
+<details>
 
 <hr>
 
