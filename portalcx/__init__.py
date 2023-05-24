@@ -12,7 +12,8 @@ from .api.auth_management import AuthManagement
 from .models.admin_project_models import ProjectCreateRequest
 from .models.admin_template_models import (CreateTemplate,
                                            GetAllStagesByTemplateIdParams,
-                                           TemplateStageCreateRequest)
+                                           TemplateStageCreateRequest,
+                                           ProjectStageCompleteRequest)
 from .models.auth_management_models import AuthManagementRegister
 from .utils.logger import get_logger
 
@@ -90,7 +91,7 @@ class PortalCX:
         :return: The JSON response from the API
         """
         return self.admin_template.create_template_stage_request(stage_data)
-    
+
     def get_all_stages_by_template_id(self, template_id: str) -> dict:
         """
         Gets all template stages for a specific template.
@@ -106,6 +107,33 @@ class PortalCX:
 
         return self.admin_template.get_all_stages_by_template_id_request(template_id)
 
+    def complete_project_stage(self, complete_stage_data: ProjectStageCompleteRequest) -> dict:
+        """
+        Completes a project stage.
+
+        :param complete_stage_data: A ProjectStageCompleteRequest object containing the stage information
+        :return: The JSON response from the API
+        """
+        return self.admin_template.complete_project_stage_request(complete_stage_data=complete_stage_data)
+
+    def delete_stage(self, template_stage_id: int) -> dict:
+        """
+        Deletes a stage with the provided id.
+
+        :param template_stage_id: An integer containing the stage id
+        :return: The JSON response from the API
+        """
+        return self.admin_template.delete_stage_request(template_stage_id)
+
+    def delete_template(self, template_id: str) -> dict:
+        """
+        Deletes a template with the provided id.
+
+        :param template_id: A UUID string containing the template id
+        :return: The JSON response from the API
+        """
+        return self.admin_template.delete_template_request(template_id)
+
     # _____________________________  Projects Section  _____________________________
 
     def create_project(self, project_data: ProjectCreateRequest) -> dict:
@@ -116,3 +144,12 @@ class PortalCX:
         :return: The JSON response from the API
         """
         return self.admin_project.create_project_request(project_data)
+
+    def delete_project(self, project_id: int) -> dict:
+        """
+        Deletes a project with the provided id.
+
+        :param project_id: An integer containing the project id
+        :return: The JSON response from the API
+        """
+        return self.admin_project.delete_project_request(project_id)

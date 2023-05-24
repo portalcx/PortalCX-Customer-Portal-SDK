@@ -11,7 +11,8 @@ from typing import Dict
 
 from portalcx.models.admin_template_models import (
     CreateTemplate,
-    TemplateStageCreateRequest
+    TemplateStageCreateRequest,
+    ProjectStageCompleteRequest
 )
 
 from .api_base import APIBase
@@ -98,5 +99,71 @@ class AdminTemplate(APIBase):
         response_data = self.request("GET", get_stages_url, headers=headers)
         
         self.logger.info("Successfully retrieved template stages")
+
+        return response_data
+
+    def complete_project_stage_request(self, complete_stage_data: ProjectStageCompleteRequest) -> Dict:
+        """
+        Complete a project stage.
+
+        :param complete_stage_data: A ProjectStageCompleteRequest object containing the stage information
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        complete_stage_url = "/api/Admin/Project/CompleteProjectStage"
+        headers = {'Authorization': f'Bearer {self.token}'}
+
+        self.logger.info(f"Setting stage {complete_stage_data.completedStageLabel} to Complete")
+
+        # Convert to JSON
+        complete_stage_data_dict = complete_stage_data.to_dict()
+
+        # Make the request and process the response
+        response_data = self.request("POST",
+                                     complete_stage_url,
+                                     json=complete_stage_data_dict,
+                                     headers=headers)
+
+        self.logger.info(f"Successfully completed stage: {complete_stage_data.completedStageLabel}")
+
+        return response_data
+
+    def delete_stage_request(self, template_stage_id: int) -> Dict:
+        """
+        Delete a stage.
+
+        :param template_stage_id: An integer containing the stage id
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        delete_stage_url = f"/api/Admin/Template/DeleteStage?templateStageId={template_stage_id}"
+        headers = {'Authorization': f'Bearer {self.token}'}
+
+        self.logger.info(f"Deleting stage with id: {template_stage_id}")
+
+        # Make the request and process the response
+        response_data = self.request("DELETE", delete_stage_url, headers=headers)
+
+        self.logger.info(f"Successfully deleted stage: {template_stage_id}")
+
+        return response_data
+
+    def delete_template_request(self, template_id: str) -> Dict:
+        """
+        Delete a template.
+
+        :param template_id: A UUID string containing the template id
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        delete_template_url = f"/api/Admin/Template/DeleteTemplate?templateId={template_id}"
+        headers = {'Authorization': f'Bearer {self.token}'}
+
+        self.logger.info(f"Deleting template with id: {template_id}")
+
+        # Make the request and process the response
+        response_data = self.request("DELETE", delete_template_url, headers=headers)
+
+        self.logger.info(f"Successfully deleted template: {template_id}")
 
         return response_data

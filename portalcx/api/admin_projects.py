@@ -51,3 +51,23 @@ class AdminProject(APIBase):
         self.logger.info("Successfully created a new project")
 
         return response_data
+
+    def delete_project_request(self, project_id: int) -> Dict:
+        """
+        Delete a project.
+
+        :param project_id: An integer containing the project id
+        :return: The JSON response from the API
+        :raise: APIBaseError if the request fails
+        """
+        delete_project_url = f"/api/Admin/Project/DeleteProject?projectId={project_id}"
+        headers = {'Authorization': f'Bearer {self.token}'}
+
+        self.logger.info(f"Deleting project with id: {project_id}")
+
+        # Make the request and process the response
+        response_data = self.request("DELETE", delete_project_url, headers=headers)
+
+        self.logger.info(f"Successfully deleted project: {project_id}")
+
+        return response_data

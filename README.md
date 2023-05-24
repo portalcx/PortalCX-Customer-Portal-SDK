@@ -40,7 +40,7 @@ python -m pytest
 
 <details><summary><h4>1.<a href="https://signup.portalcx.com"> Register For PortalCX</a></h4></summary>
 
-Try Portal Free for 14 Days!
+Try PortalCX Free for 14 Days!
 
 </details>
 
@@ -480,15 +480,15 @@ Try Portal Free for 14 Days!
 
 <hr>
 
-<details><summary><h4>7. Complete Each Stage Until Project Complete by Project ID And Stage ID/Name</h4></summary>
+<details><summary><h4>7. Complete Each Stage Until Project Fully Complete by Portal ID and Stage ID/Name</h4></summary>
 
-**URL:** `/api/Admin/Project/ProjectStageChange`
+**URL:** `/api/Admin/Project/CompleteProjectStage`
 
 **JSON Schema:**
 
 ```json
 {
-    "/api/Admin/Project/ProjectStageChange": {
+    "/api/Admin/Project/CompleteProjectStage": {
         "post": {
             "tags": [
                 "AdminProject"
@@ -497,17 +497,17 @@ Try Portal Free for 14 Days!
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ProjectStageChangeRequest"
+                            "$ref": "#/components/schemas/ProjectStageCompleteRequest"
                         }
                     },
                     "text/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ProjectStageChangeRequest"
+                            "$ref": "#/components/schemas/ProjectStageCompleteRequest"
                         }
                     },
                     "application/*+json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ProjectStageChangeRequest"
+                            "$ref": "#/components/schemas/ProjectStageCompleteRequest"
                         }
                     }
                 }
@@ -519,24 +519,27 @@ Try Portal Free for 14 Days!
             }
         }
     },
-    "ProjectStageChangeRequest": {
+    "ProjectStageCompleteRequest": {
         "required": [
             "completedDate",
+            "completedStageLabel",
             "notifyViaEmail",
-            "projectId",
-            "templateStages"
+            "notifyViaSms"
         ],
         "type": "object",
         "properties": {
             "projectId": {
                 "type": "integer",
-                "format": "int64"
+                "format": "int64",
+                "nullable": true
             },
-            "templateStages": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/components/schemas/StagesViewModel"
-                }
+            "portalId": {
+                "type": "string",
+                "nullable": true
+            },
+            "completedStageLabel": {
+                "minLength": 1,
+                "type": "string"
             },
             "completedDate": {
                 "type": "string",
@@ -545,230 +548,20 @@ Try Portal Free for 14 Days!
             "notifyViaEmail": {
                 "type": "boolean"
             },
-            "stageId": {
-                "type": "integer",
-                "format": "int64",
-                "nullable": true
-            },
-            "templateStageId": {
-                "type": "integer",
-                "format": "int64",
-                "nullable": true
-            }
-        },
-        "additionalProperties": false
-    },
-    "StagesViewModel": {
-        "type": "object",
-        "properties": {
-            "stageId": {
-                "type": "integer",
-                "format": "int64",
-                "nullable": true
-            },
-            "templateStageId": {
-                "type": "integer",
-                "format": "int64",
-                "nullable": true
-            },
-            "templateStageName": {
-                "type": "string",
-                "nullable": true
-            },
-            "isCompleted": {
+            "notifyViaSms": {
                 "type": "boolean"
-            },
-            "displayOrder": {
-                "type": "integer",
-                "format": "int32"
-            },
-            "createdDate": {
-                "type": "string",
-                "format": "date-time"
             }
         },
         "additionalProperties": false
     }
 }
 ```
+
 </details>
 
 <hr>
 
-<details><summary><h4>8. Update Project Information By Project ID</h4></summary>
-
->**Note:** Update Name And Email In Project
-
-**URL:** `/api/Admin/Project/UpdateProject`
-
-**JSON Schema:**
-
-```json
-{
-    "/api/Admin/Project/UpdateProject": {
-        "post": {
-            "tags": [
-                "AdminProject"
-            ],
-            "requestBody": {
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/GetProjectDetailViewModel"
-                        }
-                    },
-                    "text/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/GetProjectDetailViewModel"
-                        }
-                    },
-                    "application/*+json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/GetProjectDetailViewModel"
-                        }
-                    }
-                }
-            },
-            "responses": {
-                "200": {
-                    "description": "Success"
-                }
-            }
-        }
-    },
-    "GetProjectDetailViewModel": {
-        "type": "object",
-        "properties": {
-            "projectId": {
-                "type": "integer",
-                "format": "int64"
-            },
-            "status": {
-                "$ref": "#/components/schemas/ProjectStatusEnum"
-            },
-            "firstName": {
-                "type": "string",
-                "nullable": true
-            },
-            "lastName": {
-                "type": "string",
-                "nullable": true
-            },
-            "phone": {
-                "type": "string",
-                "nullable": true
-            },
-            "email": {
-                "type": "string",
-                "nullable": true
-            },
-            "addressLine1": {
-                "type": "string",
-                "nullable": true
-            },
-            "addressLine2": {
-                "type": "string",
-                "nullable": true
-            },
-            "city": {
-                "type": "string",
-                "nullable": true
-            },
-            "stateCode": {
-                "type": "string",
-                "nullable": true
-            },
-            "zip": {
-                "type": "string",
-                "nullable": true
-            },
-            "notifyViaEmail": {
-                "type": "boolean"
-            },
-            "notifyViaSMS": {
-                "type": "boolean"
-            },
-            "countryId": {
-                "type": "integer",
-                "format": "int64",
-                "nullable": true
-            },
-            "projectSubscribers": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/components/schemas/ProjectSubscriberRequestViewModel"
-                },
-                "nullable": true
-            },
-            "deletedProjectSubscriberIds": {
-                "type": "array",
-                "items": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "nullable": true
-            }
-        },
-        "additionalProperties": false
-    },
-    "ProjectStatusEnum": {
-        "enum": [
-            0,
-            1,
-            2
-        ],
-        "type": "integer",
-        "format": "int32"
-    },
-    "ProjectSubscriberRequestViewModel": {
-        "required": [
-            "email",
-            "firstName",
-            "lastName",
-            "phonenumber"
-        ],
-        "type": "object",
-        "properties": {
-            "projectSubscriberId": {
-                "type": "integer",
-                "format": "int64"
-            },
-            "firstName": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "lastName": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "email": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "phonenumber": {
-                "minLength": 1,
-                "type": "string"
-            },
-            "notifyViaEmail": {
-                "type": "boolean"
-            },
-            "notifyViaSMS": {
-                "type": "boolean"
-            },
-            "countryId": {
-                "type": "integer",
-                "format": "int64"
-            }
-        },
-        "additionalProperties": false
-    }
-}
-```
-</details>
-
-<hr>
-
-<details><summary><h4>9. Delete Project By Project ID</h4></summary>
+<details><summary><h4>8. Delete Project By Project ID</h4></summary>
 
 **URL:** `/api/Admin/Project/DeleteProject`
 
@@ -804,7 +597,7 @@ Try Portal Free for 14 Days!
 
 <hr>
 
-<details><summary><h4>10. Delete Each Stage By Template Stage ID</h4></summary>
+<details><summary><h4>9. Delete Each Stage By Template Stage ID</h4></summary>
 
 **URL:** `/api/Admin/Template/DeleteStage`
 
@@ -840,7 +633,7 @@ Try Portal Free for 14 Days!
 
 <hr>
 
-<details><summary><h4>11. Delete Template</h4></summary>
+<details><summary><h4>10. Delete Template</h4></summary>
 
 **URL:** `/api/Admin/Project/DeleteProject`
 
