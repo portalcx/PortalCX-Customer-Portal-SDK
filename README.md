@@ -17,7 +17,7 @@ Here is a simple example of how to use the SDK in your application:
 ```python
 from portalcx import PortalCX
 
-pxc = PortalCX(api_base_url="https://api.portalcx.com")
+pxc = PortalCX(base_url="https://api.portalcx.com")
 
 auth_token = pxc.login(email="email@email.com", password="password")
 ```
