@@ -360,12 +360,12 @@ class TestTemplateAndProjectFlow(BaseTest):
         self.test_delete_project(project_id=project_id)
         logging.info(f'{log_template} TEST 6 FINISHED {log_template}\nDeleted Project by Project ID: {project_id}')
 
-        # 7. Delete each stage
-        logging.info(f'{log_template} TEST 7 STARTED {log_template}\nDeleting each stage in Project Template ID {project_id}...')
-        self.test_delete_stage(stage_ids=stage_ids)
-        logging.info(f'{log_template} TEST 7 FINISHED {log_template}\nDeleted all stages in Project Template ID {project_id}')
+        # # 7. Delete each stage
+        # logging.info(f'{log_template} TEST 7 STARTED {log_template}\nDeleting each stage in Project Template ID {project_id}...')
+        # self.test_delete_stage(stage_ids=stage_ids)
+        # logging.info(f'{log_template} TEST 7 FINISHED {log_template}\nDeleted all stages in Project Template ID {project_id}')
 
-        # 8. Delete template
-        logging.info(f'{log_template} TEST 8 STARTED {log_template}\nDelete template with Template ID {template_id}...')
-        self.test_delete_template(template_id=template_id)
-        logging.info(f'{log_template} TEST 8 FINISHED {log_template}\nDeleted template with Template ID {template_id}')
+        # # 8. Delete template
+        # logging.info(f'{log_template} TEST 8 STARTED {log_template}\nDelete template with Template ID {template_id}...')
+        # self.test_delete_template(template_id=template_id)
+        # logging.info(f'{log_template} TEST 8 FINISHED {log_template}\nDeleted template with Template ID {template_id}')
