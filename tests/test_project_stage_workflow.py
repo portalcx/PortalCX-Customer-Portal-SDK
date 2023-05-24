@@ -74,7 +74,7 @@ class TestTemplateAndProjectFlow(BaseTest):
 
         return dateTimeString
 
-    @pytest.mark.dependency()
+
     def test_create_template(self):
         """
         Creates a template and returns its ID.

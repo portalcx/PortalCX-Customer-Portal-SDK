@@ -3,3 +3,4 @@ pydantic
 pytest
 pytest-dependency
 orjson
+pytest-pretty
