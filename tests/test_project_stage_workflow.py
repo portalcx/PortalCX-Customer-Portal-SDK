@@ -74,7 +74,7 @@ class TestTemplateAndProjectFlow(BaseTest):
 
         return dateTimeString
 
-
+    @pytest.mark.dependency()
     def test_create_template(self):
         """
         Creates a template and returns its ID.
@@ -286,7 +286,6 @@ class TestTemplateAndProjectFlow(BaseTest):
         AssertResponse.assert_status_code(response_data, 200)
         AssertResponse.assert_message(response_data, "Project deleted successfully")
 
-    @pytest.mark.skip(reason="Has a bug, work in progress to resolve it.")
     @pytest.mark.dependency(depends=["test_delete_project"])
     def test_delete_stage(self, stage_ids: dict):
         """
@@ -298,12 +297,12 @@ class TestTemplateAndProjectFlow(BaseTest):
             response_data = self.pxc.delete_stage(stage_id)
 
             AssertResponse.assert_status_code(response_data, 200)
-            AssertResponse.assert_message(response_data, "Stage deleted successfully")
+            AssertResponse.assert_message(response_data, "Template Stage deleted successfully")
             assert isinstance(response_data, dict), "Response is not a dictionary"
 
         logging.info('Test complete: delete_stage')
 
-    @pytest.mark.dependency(depends=["test_delete_project"]) #  Change 
+    @pytest.mark.dependency(depends=["test_delete_stage"]) #  Change 
     def test_delete_template(self, template_id: str):
         """
         Delete a template.
@@ -319,6 +318,7 @@ class TestTemplateAndProjectFlow(BaseTest):
 
         logging.info('Test complete: delete_template')
 
+    @pytest.mark.dependency()
     def test_project_and_stages_flow(self):
         """
         Test the flow of creating a project, creating stages,
@@ -360,12 +360,12 @@ class TestTemplateAndProjectFlow(BaseTest):
         self.test_delete_project(project_id=project_id)
         logging.info(f'{log_template} TEST 6 FINISHED {log_template}\nDeleted Project by Project ID: {project_id}')
 
-        # # 7. Delete each stage
-        # logging.info(f'{log_template} TEST 7 STARTED {log_template}\nDeleting each stage in Project Template ID {project_id}...')
-        # self.test_delete_stage(stage_ids=stage_ids)
-        # logging.info(f'{log_template} TEST 7 FINISHED {log_template}\nDeleted all stages in Project Template ID {project_id}')
+        # 7. Delete each stage
+        logging.info(f'{log_template} TEST 7 STARTED {log_template}\nDeleting each stage in Project Template ID {project_id}...')
+        self.test_delete_stage(stage_ids=stage_ids)
+        logging.info(f'{log_template} TEST 7 FINISHED {log_template}\nDeleted all stages in Project Template ID {project_id}')
 
-        # # 8. Delete template
-        # logging.info(f'{log_template} TEST 8 STARTED {log_template}\nDelete template with Template ID {template_id}...')
-        # self.test_delete_template(template_id=template_id)
-        # logging.info(f'{log_template} TEST 8 FINISHED {log_template}\nDeleted template with Template ID {template_id}')
+        # 8. Delete template
+        logging.info(f'{log_template} TEST 8 STARTED {log_template}\nDelete template with Template ID {template_id}...')
+        self.test_delete_template(template_id=template_id)
+        logging.info(f'{log_template} TEST 8 FINISHED {log_template}\nDeleted template with Template ID {template_id}')
