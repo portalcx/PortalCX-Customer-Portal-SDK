@@ -15,11 +15,26 @@ from typing import List, Optional
 from .base_model import BaseModel
 
 
+class ProjectSubscriberRequestViewModel(BaseModel):
+    """
+    This class represents a request to create a project subscriber.
+    """
+    projectSubscriberId: Optional[int]
+    firstName: str
+    lastName: str
+    email: str
+    phonenumber: str
+    notifyViaEmail: bool
+    notifyViaSMS: bool
+    countryId: int
+
+
 class ProjectCreateRequest(BaseModel):
     """
     This class represents a request to create a project.
     """
     projectId: Optional[int]
+    projectTitle: Optional[str]
     templateId: str
     firstName: str
     lastName: str
@@ -34,7 +49,7 @@ class ProjectCreateRequest(BaseModel):
     notifyViaSMS: bool
     completeFirstStage: bool
     countryId: int
-    #projectSubscribers: Optional[List[ProjectSubscriberRequestViewModel]]
+    projectSubscribers: Optional[List[ProjectSubscriberRequestViewModel]]
 
 
 class GetProjectDetailViewModel(BaseModel):

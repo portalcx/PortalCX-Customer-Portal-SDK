@@ -34,7 +34,7 @@ class AdminProject(APIBase):
         headers = {'Authorization': f'Bearer {self.token}'}
 
         self.logger.info(
-            f"Creating a new project with for {project_data.firstName} {project_data.lastName}"
+            f"Creating a new project for {project_data.firstName} {project_data.lastName}"
             f" and phone number {project_data.phoneNumber} using the template id:"
             f" {project_data.templateId}"
         )

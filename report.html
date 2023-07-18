@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>report.html</title>
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>report.html</h1>
+    <p>Report generated on 24-May-2023 at 11:41:18 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Environment</h2>
+    <table id="environment">
+      <tr>
+        <td>Packages</td>
+        <td>{"pluggy": "1.0.0", "pytest": "7.3.1"}</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>macOS-13.3.1-x86_64-i386-64bit</td></tr>
+      <tr>
+        <td>Plugins</td>
+        <td>{"anyio": "3.6.2", "dependency": "0.5.1", "html": "3.2.0", "metadata": "2.0.4"}</td></tr>
+      <tr>
+        <td>Python</td>
+        <td>3.10.11</td></tr></table>
+    <h2>Summary</h2>
+    <p>2 tests ran in 40.41 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">2 passed</span>, <input checked="true" class="filter" data-test-result="skipped" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">8 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_create_template_stages</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/.venv/lib/python3.10/site-packages/pytest_dependency.py&#x27;, 103, &#x27;Skipped: test_create_template_stages depends on test_create_template&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_create_project</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/.venv/lib/python3.10/site-packages/pytest_dependency.py&#x27;, 103, &#x27;Skipped: test_create_project depends on test_create_template_stages&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_get_all_stages_by_template_id</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/.venv/lib/python3.10/site-packages/pytest_dependency.py&#x27;, 103, &#x27;Skipped: test_get_all_stages_by_template_id depends on test_create_project&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_complete_project_stages</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/.venv/lib/python3.10/site-packages/pytest_dependency.py&#x27;, 103, &#x27;Skipped: test_complete_project_stages depends on test_get_all_stages_by_template_id&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_delete_project</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/.venv/lib/python3.10/site-packages/pytest_dependency.py&#x27;, 103, &#x27;Skipped: test_delete_project depends on test_complete_project_stages&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_delete_stage</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/tests/test_project_stage_workflow.py&#x27;, 289, &#x27;Skipped: Has a bug, work in progress to resolve it.&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_delete_template</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/.venv/lib/python3.10/site-packages/pytest_dependency.py&#x27;, 103, &#x27;Skipped: test_delete_template depends on test_delete_project&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">tests/test_register.py::TestAuthManagementRegister::test_register</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;/Users/matthewschwen/projects/PortalCX-Customer-Portal-SDK/tests/test_register.py&#x27;, 16, &#x27;Skipped: Already Registered&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_create_template</td>
+          <td class="col-duration">4.27</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stderr setup------------------------------ <br/>2023-05-24 11:40:37,970 - INFO - Logging into PortalCX API with email: dev@portalcx.com
+2023-05-24 11:40:37,970 - INFO - Logging into PortalCX API with email: dev@portalcx.com
+2023-05-24 11:40:37,970 - INFO - Logging into PortalCX API with email: dev@portalcx.com
+2023-05-24 11:40:37,970 - INFO - Logging into PortalCX API with email: dev@portalcx.com
+2023-05-24 11:40:40,415 - INFO - Successfully logged into PortalCX API
+2023-05-24 11:40:40,415 - INFO - Successfully logged into PortalCX API
+2023-05-24 11:40:40,415 - INFO - Successfully logged into PortalCX API
+2023-05-24 11:40:40,415 - INFO - Successfully logged into PortalCX API
+<br/> -------------------------------Captured log setup------------------------------- <br/>INFO     portalcx.utils.logger:auth_management.py:54 Logging into PortalCX API with email: dev@portalcx.com
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/AuthManagement/Login &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:auth_management.py:62 Successfully logged into PortalCX API<br/> ------------------------------Captured stderr call------------------------------ <br/>2023-05-24 11:40:40,416 - INFO - Creating a new template with title: Fun Internet Links - zzgksrcyyl
+2023-05-24 11:40:40,416 - INFO - Creating a new template with title: Fun Internet Links - zzgksrcyyl
+2023-05-24 11:40:40,416 - INFO - Creating a new template with title: Fun Internet Links - zzgksrcyyl
+2023-05-24 11:40:40,416 - INFO - Creating a new template with title: Fun Internet Links - zzgksrcyyl
+2023-05-24 11:40:42,249 - INFO - Successfully created a new template
+2023-05-24 11:40:42,249 - INFO - Successfully created a new template
+2023-05-24 11:40:42,249 - INFO - Successfully created a new template
+2023-05-24 11:40:42,249 - INFO - Successfully created a new template
+<br/> -------------------------------Captured log call-------------------------------- <br/>INFO     portalcx.utils.logger:admin_templates.py:41 Creating a new template with title: Fun Internet Links - zzgksrcyyl
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Template/CreateTemplate &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:55 Successfully created a new template<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">tests/test_project_stage_workflow.py::TestTemplateAndProjectFlow::test_project_and_stages_flow</td>
+          <td class="col-duration">35.96</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> ------------------------------Captured stderr call------------------------------ <br/>2023-05-24 11:40:42,263 - INFO - Creating a new template with title: Fun Internet Links - sqoidaawld
+2023-05-24 11:40:42,263 - INFO - Creating a new template with title: Fun Internet Links - sqoidaawld
+2023-05-24 11:40:42,263 - INFO - Creating a new template with title: Fun Internet Links - sqoidaawld
+2023-05-24 11:40:42,263 - INFO - Creating a new template with title: Fun Internet Links - sqoidaawld
+2023-05-24 11:40:42,680 - INFO - Successfully created a new template
+2023-05-24 11:40:42,680 - INFO - Successfully created a new template
+2023-05-24 11:40:42,680 - INFO - Successfully created a new template
+2023-05-24 11:40:42,680 - INFO - Successfully created a new template
+2023-05-24 11:40:42,680 - INFO - Creating a new template stage with name: Stage 1 - A Soft Murmur for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:42,680 - INFO - Creating a new template stage with name: Stage 1 - A Soft Murmur for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:42,680 - INFO - Creating a new template stage with name: Stage 1 - A Soft Murmur for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:42,680 - INFO - Creating a new template stage with name: Stage 1 - A Soft Murmur for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,216 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,216 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,216 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,216 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,216 - INFO - Creating a new template stage with name: Stage 2 - The Useless Web for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,216 - INFO - Creating a new template stage with name: Stage 2 - The Useless Web for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,216 - INFO - Creating a new template stage with name: Stage 2 - The Useless Web for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,216 - INFO - Creating a new template stage with name: Stage 2 - The Useless Web for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,443 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,443 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,443 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,443 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,443 - INFO - Creating a new template stage with name: Stage 3 - Window Swap for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,443 - INFO - Creating a new template stage with name: Stage 3 - Window Swap for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,443 - INFO - Creating a new template stage with name: Stage 3 - Window Swap for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,443 - INFO - Creating a new template stage with name: Stage 3 - Window Swap for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,774 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,774 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,774 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,774 - INFO - Successfully created a new template stage
+2023-05-24 11:40:43,775 - INFO - Creating a new project with for The Dude and phone number 8016697921 using the template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,775 - INFO - Creating a new project with for The Dude and phone number 8016697921 using the template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,775 - INFO - Creating a new project with for The Dude and phone number 8016697921 using the template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:43,775 - INFO - Creating a new project with for The Dude and phone number 8016697921 using the template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:45,484 - INFO - Successfully created a new project
+2023-05-24 11:40:45,484 - INFO - Successfully created a new project
+2023-05-24 11:40:45,484 - INFO - Successfully created a new project
+2023-05-24 11:40:45,484 - INFO - Successfully created a new project
+2023-05-24 11:40:45,485 - INFO - Getting all stages for Template Id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:45,485 - INFO - Getting all stages for Template Id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:45,485 - INFO - Getting all stages for Template Id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:45,485 - INFO - Getting all stages for Template Id: 5ba86135-042e-41b1-baf4-740bf93671a7
+2023-05-24 11:40:45,732 - INFO - Successfully retrieved template stages
+2023-05-24 11:40:45,732 - INFO - Successfully retrieved template stages
+2023-05-24 11:40:45,732 - INFO - Successfully retrieved template stages
+2023-05-24 11:40:45,732 - INFO - Successfully retrieved template stages
+2023-05-24 11:40:45,733 - INFO - Setting stage Stage 1 - A Soft Murmur to Complete
+2023-05-24 11:40:45,733 - INFO - Setting stage Stage 1 - A Soft Murmur to Complete
+2023-05-24 11:40:45,733 - INFO - Setting stage Stage 1 - A Soft Murmur to Complete
+2023-05-24 11:40:45,733 - INFO - Setting stage Stage 1 - A Soft Murmur to Complete
+2023-05-24 11:40:46,754 - INFO - Successfully completed stage: Stage 1 - A Soft Murmur
+2023-05-24 11:40:46,754 - INFO - Successfully completed stage: Stage 1 - A Soft Murmur
+2023-05-24 11:40:46,754 - INFO - Successfully completed stage: Stage 1 - A Soft Murmur
+2023-05-24 11:40:46,754 - INFO - Successfully completed stage: Stage 1 - A Soft Murmur
+2023-05-24 11:40:56,791 - INFO - Setting stage Stage 2 - The Useless Web to Complete
+2023-05-24 11:40:56,791 - INFO - Setting stage Stage 2 - The Useless Web to Complete
+2023-05-24 11:40:56,791 - INFO - Setting stage Stage 2 - The Useless Web to Complete
+2023-05-24 11:40:56,791 - INFO - Setting stage Stage 2 - The Useless Web to Complete
+2023-05-24 11:40:57,399 - INFO - Successfully completed stage: Stage 2 - The Useless Web
+2023-05-24 11:40:57,399 - INFO - Successfully completed stage: Stage 2 - The Useless Web
+2023-05-24 11:40:57,399 - INFO - Successfully completed stage: Stage 2 - The Useless Web
+2023-05-24 11:40:57,399 - INFO - Successfully completed stage: Stage 2 - The Useless Web
+2023-05-24 11:41:07,425 - INFO - Setting stage Stage 3 - Window Swap to Complete
+2023-05-24 11:41:07,425 - INFO - Setting stage Stage 3 - Window Swap to Complete
+2023-05-24 11:41:07,425 - INFO - Setting stage Stage 3 - Window Swap to Complete
+2023-05-24 11:41:07,425 - INFO - Setting stage Stage 3 - Window Swap to Complete
+2023-05-24 11:41:07,960 - INFO - Successfully completed stage: Stage 3 - Window Swap
+2023-05-24 11:41:07,960 - INFO - Successfully completed stage: Stage 3 - Window Swap
+2023-05-24 11:41:07,960 - INFO - Successfully completed stage: Stage 3 - Window Swap
+2023-05-24 11:41:07,960 - INFO - Successfully completed stage: Stage 3 - Window Swap
+2023-05-24 11:41:17,995 - INFO - Deleting project with id: 6919
+2023-05-24 11:41:17,995 - INFO - Deleting project with id: 6919
+2023-05-24 11:41:17,995 - INFO - Deleting project with id: 6919
+2023-05-24 11:41:17,995 - INFO - Deleting project with id: 6919
+2023-05-24 11:41:18,222 - INFO - Successfully deleted project: 6919
+2023-05-24 11:41:18,222 - INFO - Successfully deleted project: 6919
+2023-05-24 11:41:18,222 - INFO - Successfully deleted project: 6919
+2023-05-24 11:41:18,222 - INFO - Successfully deleted project: 6919
+<br/> -------------------------------Captured log call-------------------------------- <br/>INFO     root:test_project_stage_workflow.py:330 #################### TEST 1 STARTED ####################
+Creating New Template...
+INFO     portalcx.utils.logger:admin_templates.py:41 Creating a new template with title: Fun Internet Links - sqoidaawld
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Template/CreateTemplate &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:55 Successfully created a new template
+INFO     root:test_project_stage_workflow.py:332 #################### TEST 1 FINISHED ####################
+Created with Template ID: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     root:test_project_stage_workflow.py:335 ####################TEST 2 STARTED ####################
+Creating 3 new stages from Template ID: 5ba86135-042e-41b1-baf4-740bf93671a7 ...
+INFO     portalcx.utils.logger:admin_templates.py:70 Creating a new template stage with name: Stage 1 - A Soft Murmur for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Template/CreateStage &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:81 Successfully created a new template stage
+INFO     portalcx.utils.logger:admin_templates.py:70 Creating a new template stage with name: Stage 2 - The Useless Web for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Template/CreateStage &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:81 Successfully created a new template stage
+INFO     portalcx.utils.logger:admin_templates.py:70 Creating a new template stage with name: Stage 3 - Window Swap for template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Template/CreateStage &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:81 Successfully created a new template stage
+INFO     root:test_project_stage_workflow.py:337 ####################TEST 2 FINISHED ####################
+Stages created for Template ID: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     root:test_project_stage_workflow.py:340 #################### TEST 3 STARTED ####################
+Creating project using Template ID: 5ba86135-042e-41b1-baf4-740bf93671a7 ...
+INFO     portalcx.utils.logger:admin_projects.py:36 Creating a new project with for The Dude and phone number 8016697921 using the template id: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Project/CreateProject &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_projects.py:51 Successfully created a new project
+INFO     root:test_project_stage_workflow.py:342 #################### TEST 3 FINISHED ####################
+Created project with:
+Template ID: 5ba86135-042e-41b1-baf4-740bf93671a7
+Project ID: 6919
+Portal ID: 8365593f-18b7-4e1c-92ec-22ab7a4ffe1d
+INFO     root:test_project_stage_workflow.py:349 #################### TEST 4 STARTED ####################
+Get all stages with Template ID 5ba86135-042e-41b1-baf4-740bf93671a7...
+INFO     portalcx.utils.logger:admin_templates.py:96 Getting all stages for Template Id: 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     httpx:_client.py:1013 HTTP Request: GET https://apidev.portalcx.com/api/Admin/Template/GetAllStagesByTemplateId?templateId=5ba86135-042e-41b1-baf4-740bf93671a7 &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:101 Successfully retrieved template stages
+INFO     root:test_project_stage_workflow.py:351 #################### TEST 4 FINISHED ####################
+Got all stages with Template ID 5ba86135-042e-41b1-baf4-740bf93671a7
+INFO     root:test_project_stage_workflow.py:354 #################### TEST 5 STARTED ####################
+Complete all stages by Portal ID and Project ID...
+INFO     root:test_project_stage_workflow.py:253 Preparing request for stage: Stage 1 - A Soft Murmur, id: 411 using projectId: 6919
+INFO     root:test_project_stage_workflow.py:263 Completing stage named Stage 1 - A Soft Murmur with id 411 using projectId
+INFO     portalcx.utils.logger:admin_templates.py:116 Setting stage Stage 1 - A Soft Murmur to Complete
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Project/CompleteProjectStage &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:127 Successfully completed stage: Stage 1 - A Soft Murmur
+INFO     root:test_project_stage_workflow.py:267 Validating response data
+INFO     root:test_project_stage_workflow.py:274 Waiting... 1/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 2/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 3/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 4/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 5/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 6/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 7/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 8/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 9/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 10/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:253 Preparing request for stage: Stage 2 - The Useless Web, id: 412 using portalId: 8365593f-18b7-4e1c-92ec-22ab7a4ffe1d
+INFO     root:test_project_stage_workflow.py:263 Completing stage named Stage 2 - The Useless Web with id 412 using portalId
+INFO     portalcx.utils.logger:admin_templates.py:116 Setting stage Stage 2 - The Useless Web to Complete
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Project/CompleteProjectStage &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:127 Successfully completed stage: Stage 2 - The Useless Web
+INFO     root:test_project_stage_workflow.py:267 Validating response data
+INFO     root:test_project_stage_workflow.py:274 Waiting... 1/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 2/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 3/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 4/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 5/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 6/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 7/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 8/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 9/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 10/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:253 Preparing request for stage: Stage 3 - Window Swap, id: 413 using projectId: 6919
+INFO     root:test_project_stage_workflow.py:263 Completing stage named Stage 3 - Window Swap with id 413 using projectId
+INFO     portalcx.utils.logger:admin_templates.py:116 Setting stage Stage 3 - Window Swap to Complete
+INFO     httpx:_client.py:1013 HTTP Request: POST https://apidev.portalcx.com/api/Admin/Project/CompleteProjectStage &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_templates.py:127 Successfully completed stage: Stage 3 - Window Swap
+INFO     root:test_project_stage_workflow.py:267 Validating response data
+INFO     root:test_project_stage_workflow.py:274 Waiting... 1/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 2/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 3/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 4/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 5/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 6/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 7/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 8/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 9/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:274 Waiting... 10/10 seconds elapsed
+INFO     root:test_project_stage_workflow.py:277 Test complete: complete_project_stages
+INFO     root:test_project_stage_workflow.py:356 #################### TEST 5 FINISHED ####################
+Complete all stages by Portal ID and Project ID
+INFO     root:test_project_stage_workflow.py:359 #################### TEST 6 STARTED ####################
+Deleting Project by Project ID: 6919...
+INFO     portalcx.utils.logger:admin_projects.py:66 Deleting project with id: 6919
+INFO     httpx:_client.py:1013 HTTP Request: DELETE https://apidev.portalcx.com/api/Admin/Project/DeleteProject?projectId=6919 &quot;HTTP/1.1 200 OK&quot;
+INFO     portalcx.utils.logger:admin_projects.py:71 Successfully deleted project: 6919
+INFO     root:test_project_stage_workflow.py:361 #################### TEST 6 FINISHED ####################
+Deleted Project by Project ID: 6919<br/></div></td></tr></tbody></table></body></html>
