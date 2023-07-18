@@ -9,7 +9,7 @@ This file contains models for representing Admin Template data.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import constr, root_validator
@@ -23,17 +23,25 @@ class CreateTemplate(BaseModel):
     """
     templateId: Optional[str]
     companyId: Optional[int]
-    title: str
-    contactEmail: str
-    contactPhone: str
+    templateName: str
+    projectTitle: str
+    supportEmailAddress: str
+    supportPhoneNumber: str
     companyName: str
-    color: Optional[str]
+    projectAppBrandColor: Optional[str]
+    projectForgroundColor: Optional[str]
     templateAppLogoUpload: Optional[str]
     emailLogoUpload: Optional[str]
+    isCallToAction: Optional[bool]
+    linkText: Optional[str]
+    linkUrl: Optional[str]
+    projectCompletedMessage: Optional[str]
     isCustomerReferrals: bool
+    customerReferralMessage: Optional[str]
     isLogoUpdate: Optional[bool]
     isEmailLogoUpdate: Optional[bool]
     countryId: Optional[int]
+    projectOwners: Optional[List[str]]
 
 
 class TemplateStageCreateRequest(BaseModel):

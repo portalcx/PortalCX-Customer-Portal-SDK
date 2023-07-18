@@ -38,7 +38,7 @@ class AdminTemplate(APIBase):
         create_template_url = "/api/Admin/Template/CreateTemplate"
         headers = {'Authorization': f'Bearer {self.token}'}
 
-        self.logger.info(f"Creating a new template with title: {template_data.title}")
+        self.logger.info(f"Creating a new template with title: {template_data.templateName}")
 
         # Convert to JSON
         template_data_dict = template_data.to_dict()

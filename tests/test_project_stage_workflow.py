@@ -82,17 +82,25 @@ class TestTemplateAndProjectFlow(BaseTest):
         template_data = CreateTemplate(
             templateId=None,
             companyId=None,
-            title=f"Fun Internet Links - {self.generate_random_string()}",
-            contactEmail="projectmanager@solarcompany.com",
-            contactPhone="1234567899",
+            projectTitle=f"Fun Internet Links - {self.generate_random_string()}",
+            templateName=f"Automated Test Template - {self.generate_random_string()}",
+            supportEmailAddress="projectmanager@solarcompany.com",
+            supportPhoneNumber="1234567899",
             companyName="Just Another Company",
-            color=None,
+            projectAppBrandColor=None,
+            projectForgroundColor=None,
             templateAppLogoUpload=None,
             emailLogoUpload=None,
+            isCallToAction=None,
+            linkText=None,
+            linkUrl=None,
+            projectCompletedMessage=None,
             isCustomerReferrals=True,
+            customerReferralMessage=None,
             isLogoUpdate=None,
             isEmailLogoUpdate=None,
-            countryId=1
+            countryId=1,
+            projectOwners=None
         )
 
         response_data = self.pxc.create_template(template_data=template_data)
@@ -194,6 +202,7 @@ class TestTemplateAndProjectFlow(BaseTest):
 
         project_data = ProjectCreateRequest(
             projectId=None,
+            projectTitle=None,
             templateId=template_id,
             firstName="The",
             lastName="Dude",
@@ -208,7 +217,9 @@ class TestTemplateAndProjectFlow(BaseTest):
             notifyViaSMS=True,
             completeFirstStage=False,
             countryId=1,
+            projectSubscribers=None  # replace with actual list of ProjectSubscriberRequestViewModel instances if available
         )
+
 
         response_data = self.pxc.create_project(project_data=project_data)
 
