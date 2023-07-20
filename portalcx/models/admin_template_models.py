@@ -60,7 +60,7 @@ class GetAllStagesByTemplateIdParams(BaseModel):
     """
     This class represents the parameters for the 'GetAllStagesByTemplateId' API endpoint.
     """
-    templateId: Optional[constr(regex=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')]
+    templateId: Optional[str]
 
 
 class ProjectStageCompleteRequest(BaseModel):
