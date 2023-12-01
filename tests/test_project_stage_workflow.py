@@ -127,30 +127,30 @@ class TestTemplateAndProjectFlow(BaseTest):
             assert isinstance(data['name'], str), "name is not a string"
             assert 'description' in data, "description key is not in data"
             assert isinstance(data['description'], str), "description is not a string"
-            assert 'button_copy' in data, "button_copy key is not in data"
-            assert isinstance(data['button_copy'], str), "button_copy is not a string"
-            assert 'button_url' in data, "button_url key is not in data"
-            assert isinstance(data['button_url'], str), "button_url is not a string"
-            assert re.match(r"https?://\S+", data['button_url']), "button_url is not a valid URL"
+            assert 'LinkText' in data, "LinkText key is not in data"
+            assert isinstance(data['LinkText'], str), "LinkText is not a string"
+            assert 'LinkUrl' in data, "LinkUrl key is not in data"
+            assert isinstance(data['LinkUrl'], str), "LinkUrl is not a string"
+            assert re.match(r"https?://\S+", data['LinkUrl']), "LinkUrl is not a valid URL"
 
         stage_data = [
             {
                 "name": "Stage 1 - A Soft Murmur",
                 "description": "This website allows you to customize ambient sounds (rain, thunder, waves, etc.) to create your own peaceful soundscape. It's great for focusing, meditating, or simply relaxing.",
-                "button_copy": "A Soft Murmur",
-                "button_url": "https://asoftmurmur.com/"
+                "LinkText": "A Soft Murmur",
+                "LinkUrl": "https://asoftmurmur.com/"
             },
             {
                 "name": "Stage 2 - The Useless Web",
                 "description": "A fun website that takes you to random, entertaining, and 'useless' websites around the internet.",
-                "button_copy": "The Useless Web",
-                "button_url": "https://theuselessweb.com/"
+                "LinkText": "The Useless Web",
+                "LinkUrl": "https://theuselessweb.com/"
             },
             {
                 "name": "Stage 3 - Window Swap",
                 "description": "On this site, people from around the world submit videos of the view from their windows. It's a fascinating way to see different parts of the world from the comfort of your own home.",
-                "button_copy": "Window Swap",
-                "button_url": "https://window-swap.com/"
+                "LinkText": "Window Swap",
+                "LinkUrl": "https://window-swap.com/"
             }
         ]
 
@@ -160,8 +160,8 @@ class TestTemplateAndProjectFlow(BaseTest):
                 templateId=template_id,
                 stageName=data["name"],
                 stageDescription=data["description"],
-                stagePromptButtonCopy=data["button_copy"],
-                stagePromptButtonUrl=data["button_url"]
+                stagePromptButtonCopy=data["LinkText"],
+                stagePromptButtonUrl=data["LinkUrl"]
             )
 
             response_data = self.pxc.create_template_stage(stage_data=stage_request)
