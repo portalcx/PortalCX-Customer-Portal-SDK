@@ -213,7 +213,7 @@ class TestTemplateAndProjectFlow(BaseTest):
             city="Salt Lake City",
             stateCode="UT",
             zip="84101",
-            notifyViaEmail=False,
+            notifyViaEmail=True,
             notifyViaSMS=True,
             completeFirstStage=False,
             countryId=1,
